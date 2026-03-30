@@ -28,6 +28,10 @@ accordion-padding = 30
 # Default column width for niri layout, in percent of the monitor width
 niri-default-column-width-percent = 80
 
+# Draw a border around the currently focused window
+focused-window-border-enabled = false
+focused-window-border-width = 4
+
 # Possible values: tiles|accordion|niri
 default-root-container-layout = 'tiles'
 

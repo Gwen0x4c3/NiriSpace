@@ -241,6 +241,23 @@ final class ConfigTest: XCTestCase {
         )
     }
 
+    func testParseFocusedWindowBorderConfig() {
+        let (config, errors) = parseConfig(
+            """
+            focused-window-border-enabled = true
+            focused-window-border-width = 6
+            """,
+        )
+        assertEquals(errors, [])
+        assertEquals(config.focusedWindowBorderEnabled, true)
+        assertEquals(config.focusedWindowBorderWidth, 6)
+
+        assertEquals(
+            parseConfig("focused-window-border-width = 0").errors,
+            ["focused-window-border-width: Must be in [1, 32] range"],
+        )
+    }
+
     func testSplitCommandAndFlattenContainersNormalization() {
         let (_, errors) = parseConfig(
             """

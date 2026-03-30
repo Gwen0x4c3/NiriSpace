@@ -29,6 +29,7 @@ struct EnableCommand: Command {
             }
             try await activateMode(mainModeId)
         } else {
+            FocusedWindowBorderPanel.shared.close()
             try await activateMode(nil)
         }
         return true

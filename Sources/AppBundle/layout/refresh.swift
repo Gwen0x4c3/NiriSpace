@@ -41,6 +41,7 @@ func runRefreshSessionBlocking(
             SecureInputPanel.shared.refresh()
             try await normalizeLayoutReason()
             if shouldLayoutWorkspaces { try await layoutWorkspaces() }
+            try await FocusedWindowBorderPanel.shared.refresh()
         }
     }
 }
@@ -74,6 +75,7 @@ func runLightSession<T>(
             if focusBefore != focusAfter {
                 focusAfter?.nativeFocus() // syncFocusToMacOs
             }
+            try await FocusedWindowBorderPanel.shared.refresh()
             scheduleRefreshSession(event)
             return result
         }
