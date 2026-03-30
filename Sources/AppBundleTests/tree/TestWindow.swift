@@ -30,6 +30,10 @@ final class TestWindow: Window, CustomStringConvertible {
         unbindFromParent()
     }
 
+    override func getAxSize() async throws -> CGSize? {
+        _rect?.size
+    }
+
     override var title: String {
         get async { // redundant async. todo create bug report to Swift
             description
@@ -39,4 +43,14 @@ final class TestWindow: Window, CustomStringConvertible {
     @MainActor override func getAxRect() async throws -> Rect? { // todo change to not Optional
         _rect
     }
+
+    override func setAxFrame(_ topLeft: CGPoint?, _ size: CGSize?) {
+        let current = _rect ?? Rect(topLeftX: topLeft?.x ?? 0, topLeftY: topLeft?.y ?? 0, width: size?.width ?? 0, height: size?.height ?? 0)
+        _rect = current.copy(\.topLeftX, topLeft?.x ?? current.topLeftX)
+            .copy(\.topLeftY, topLeft?.y ?? current.topLeftY)
+            .copy(\.width, size?.width ?? current.width)
+            .copy(\.height, size?.height ?? current.height)
+    }
+
+    var rectForTests: Rect? { _rect }
 }

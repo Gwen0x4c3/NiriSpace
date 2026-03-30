@@ -42,6 +42,7 @@ import Foundation
 private func smartLayoutAtStartup() {
     let workspace = focus.workspace
     let root = workspace.rootTilingContainer
+    if root.layout == .niri { return }
     if root.children.count <= 3 {
         root.layout = .tiles
     } else {

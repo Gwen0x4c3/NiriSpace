@@ -25,7 +25,10 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # You can set 0 to disable the padding feature
 accordion-padding = 30
 
-# Possible values: tiles|accordion
+# Default column width for niri layout, in percent of the monitor width
+niri-default-column-width-percent = 80
+
+# Possible values: tiles|accordion|niri
 default-root-container-layout = 'tiles'
 
 # Possible values: horizontal|vertical|auto

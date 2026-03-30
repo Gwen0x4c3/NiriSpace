@@ -49,6 +49,15 @@ extension TreeNode {
         self as? Window ?? mostRecentChild?.mostRecentWindowRecursive
     }
 
+    @MainActor
+    func directChild(of ancestor: TilingContainer) -> TreeNode? {
+        var cursor: TreeNode = self
+        while let parent = cursor.parent as? TilingContainer, parent != ancestor {
+            cursor = parent
+        }
+        return cursor.parent === ancestor ? cursor : nil
+    }
+
     var anyLeafWindowRecursive: Window? {
         if let window = self as? Window {
             return window

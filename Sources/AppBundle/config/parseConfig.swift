@@ -109,6 +109,7 @@ private let configParser: [String: any ParserProtocol<Config>] = [
 
     "default-root-container-layout": Parser(\.defaultRootContainerLayout, parseLayout),
     "default-root-container-orientation": Parser(\.defaultRootContainerOrientation, parseDefaultContainerOrientation),
+    "niri-default-column-width-percent": Parser(\.niriDefaultColumnWidthPercent, parseNiriDefaultColumnWidthPercent),
 
     "start-at-login": Parser(\.startAtLogin, parseBool),
     "auto-reload-config": Parser(\.autoReloadConfig, parseBool),
@@ -368,6 +369,11 @@ private func parseDefaultContainerOrientation(_ raw: Json, _ backtrace: ConfigBa
         DefaultContainerOrientation(rawValue: $0)
             .orFailure(.semantic(backtrace, "Can't parse default container orientation '\($0)'"))
     }
+}
+
+private func parseNiriDefaultColumnWidthPercent(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
+    parseInt(raw, backtrace)
+        .filter(.semantic(backtrace, "Must be in [1, 100] range")) { (1 ... 100).contains($0) }
 }
 
 extension Parsed where Failure == String {
