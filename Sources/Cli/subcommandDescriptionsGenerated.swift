@@ -6,6 +6,7 @@ let subcommandDescriptions = [
     ["  close-all-windows-but-current", "On the focused workspace, close all windows but current"],
     ["  close", "Close the focused window"],
     ["  config", "Query AeroSpace config options"],
+    ["  cycle-size", "Cycle the focused niri column through configured width presets"],
     ["  debug-windows", "Interactive command to record Accessibility API debug information to create bug reports"],
     ["  enable", "Temporarily disable window management"],
     ["  flatten-workspace-tree", "Flatten the tree of the focused workspace"],
