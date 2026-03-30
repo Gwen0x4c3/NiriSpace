@@ -9,8 +9,12 @@ struct ResizeCommand: Command { // todo cover with tests
         guard let target = args.resolveTargetOrReportError(env, io) else { return false }
 
         let candidates = target.windowOrNil?.parentsWithSelf
-            .filter { ($0.parent as? TilingContainer)?.layout == .tiles }
+            .filter { ($0.parent as? TilingContainer)?.layout.keepsOwnWeights == true }
             ?? []
+
+        func firstCandidate(with orientation: Orientation) -> TreeNode? {
+            candidates.first(where: { ($0.parent as? TilingContainer)?.orientation == orientation })
+        }
 
         let orientation: Orientation?
         let parent: TilingContainer?
@@ -18,19 +22,23 @@ struct ResizeCommand: Command { // todo cover with tests
         switch args.dimension.val {
             case .width:
                 orientation = .h
-                node = candidates.first(where: { ($0.parent as? TilingContainer)?.orientation == orientation })
+                node = firstCandidate(with: .h)
                 parent = node?.parent as? TilingContainer
             case .height:
                 orientation = .v
-                node = candidates.first(where: { ($0.parent as? TilingContainer)?.orientation == orientation })
+                node = firstCandidate(with: .v)
                 parent = node?.parent as? TilingContainer
             case .smart:
-                node = candidates.first
+                node = candidates.first(where: { ($0.parent as? TilingContainer)?.layout == .niri }) ?? candidates.first
                 parent = node?.parent as? TilingContainer
                 orientation = parent?.orientation
             case .smartOpposite:
                 orientation = (candidates.first?.parent as? TilingContainer)?.orientation.opposite
-                node = candidates.first(where: { ($0.parent as? TilingContainer)?.orientation == orientation })
+                if let orientation {
+                    node = firstCandidate(with: orientation)
+                } else {
+                    node = nil
+                }
                 parent = node?.parent as? TilingContainer
         }
         guard let parent else { return io.err("resize command doesn't support floating windows yet https://github.com/nikitabobko/AeroSpace/issues/9") }
@@ -42,12 +50,18 @@ struct ResizeCommand: Command { // todo cover with tests
             case .subtract(let unit): -CGFloat(unit)
         }
 
-        guard let childDiff = diff.div(parent.children.count - 1) else { return false }
-        parent.children.lazy
-            .filter { $0 != node }
-            .forEach { $0.setWeight(parent.orientation, $0.getWeight(parent.orientation) - childDiff) }
-
-        node.setWeight(orientation, node.getWeight(orientation) + diff)
+        switch parent.layout {
+            case .tiles:
+                guard let childDiff = diff.div(parent.children.count - 1) else { return false }
+                parent.children.lazy
+                    .filter { $0 != node }
+                    .forEach { $0.setWeight(parent.orientation, $0.getWeight(parent.orientation) - childDiff) }
+                node.setWeight(orientation, node.getWeight(orientation) + diff)
+            case .niri:
+                node.setWeight(orientation, node.getWeight(orientation) + diff)
+            case .accordion, .tabbed:
+                return false
+        }
         return true
     }
 }
