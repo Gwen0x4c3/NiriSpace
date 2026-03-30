@@ -216,14 +216,29 @@ final class ConfigTest: XCTestCase {
     }
 
     func testParseTiles() {
-        let command = parseCommand("layout tiles h_tiles v_tiles list h_list v_list").cmdOrNil
+        let command = parseCommand("layout tiles h_tiles v_tiles list h_list v_list niri tabbed tabs").cmdOrNil
         XCTAssertTrue(command is LayoutCommand)
-        assertEquals((command as! LayoutCommand).args.toggleBetween.val, [.tiles, .h_tiles, .v_tiles, .tiles, .h_tiles, .v_tiles])
+        assertEquals((command as! LayoutCommand).args.toggleBetween.val, [.tiles, .h_tiles, .v_tiles, .tiles, .h_tiles, .v_tiles, .niri, .tabbed, .tabbed])
 
         guard case .help = parseCommand("layout tiles -h") else {
             XCTFail()
             return
         }
+    }
+
+    func testParseNiriDefaultColumnWidthPercent() {
+        let (config, errors) = parseConfig(
+            """
+            niri-default-column-width-percent = 80
+            """,
+        )
+        assertEquals(errors, [])
+        assertEquals(config.niriDefaultColumnWidthPercent, 80)
+
+        assertEquals(
+            parseConfig("niri-default-column-width-percent = 101").errors,
+            ["niri-default-column-width-percent: Must be in [1, 100] range"],
+        )
     }
 
     func testSplitCommandAndFlattenContainersNormalization() {

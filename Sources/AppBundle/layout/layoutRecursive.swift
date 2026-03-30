@@ -46,6 +46,10 @@ extension TreeNode {
                         try await container.layoutTiles(point, width: width, height: height, virtual: virtual, context)
                     case .accordion:
                         try await container.layoutAccordion(point, width: width, height: height, virtual: virtual, context)
+                    case .tabbed:
+                        try await container.layoutTabbed(point, width: width, height: height, virtual: virtual, context)
+                    case .niri:
+                        try await container.layoutNiri(point, width: width, height: height, virtual: virtual, context)
                 }
             case .macosMinimizedWindowsContainer, .macosFullscreenWindowsContainer,
                  .macosPopupWindowsContainer, .macosHiddenAppsWindowsContainer:
@@ -103,6 +107,32 @@ extension Window {
 }
 
 extension TilingContainer {
+    private static let niriViewportWidthKey = TreeNodeUserDataKey<CGFloat>(key: "niriViewportWidthKey")
+
+    @MainActor
+    fileprivate func layoutNiri(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
+        normalizeNiriColumnWidthsForViewport(width)
+        var virtualPoint = virtual.topLeftCorner
+        let viewportOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
+
+        for child in children {
+            let childWidth = child.getWeight(.h)
+            try await child.layoutRecursive(
+                CGPoint(x: point.x + virtualPoint.x - virtual.minX - viewportOffset, y: point.y),
+                width: childWidth,
+                height: height,
+                virtual: Rect(
+                    topLeftX: virtualPoint.x,
+                    topLeftY: virtualPoint.y,
+                    width: childWidth,
+                    height: height,
+                ),
+                context,
+            )
+            virtualPoint = virtualPoint.addingXOffset(childWidth)
+        }
+    }
+
     @MainActor
     fileprivate func layoutTiles(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
         var point = point
@@ -170,5 +200,42 @@ extension TilingContainer {
                     )
             }
         }
+    }
+
+    @MainActor
+    fileprivate func layoutTabbed(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
+        guard let mruChild = mostRecentChild else { return }
+        for child in children where child != mruChild {
+            try await child.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
+        }
+        try await mruChild.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
+    }
+
+    @MainActor
+    private func niriViewportOffset(in workspace: Workspace, viewportWidth: CGFloat) -> CGFloat {
+        guard layout == .niri else { return 0 }
+        let anchorLeaf = (
+            focus.workspace == workspace
+                ? focus.windowOrNil
+                : workspace.mostRecentWindowRecursive ?? workspace.anyLeafWindowRecursive
+        ) ?? mostRecentWindowRecursive ?? anyLeafWindowRecursive
+        guard let activeChild = anchorLeaf?.directChild(of: self) ?? mostRecentChild ?? children.first else { return 0 }
+        let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
+        return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
+    }
+
+    @MainActor
+    private func normalizeNiriColumnWidthsForViewport(_ viewportWidth: CGFloat) {
+        guard layout == .niri else { return }
+        if let previousViewportWidth = getUserData(key: Self.niriViewportWidthKey),
+           previousViewportWidth > 0,
+           abs(previousViewportWidth - viewportWidth) > 0.5
+        {
+            let scale = viewportWidth / previousViewportWidth
+            for child in children {
+                child.setWeight(.h, child.getWeight(.h) * scale)
+            }
+        }
+        putUserData(key: Self.niriViewportWidthKey, data: viewportWidth)
     }
 }

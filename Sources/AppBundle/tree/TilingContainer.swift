@@ -58,6 +58,24 @@ extension TilingContainer {
 enum Layout: String {
     case tiles
     case accordion
+    case tabbed
+    case niri
+}
+
+extension Layout {
+    var keepsOwnWeights: Bool {
+        switch self {
+            case .tiles, .niri: true
+            case .accordion, .tabbed: false
+        }
+    }
+
+    var forcedOrientation: Orientation? {
+        switch self {
+            case .niri: .h
+            case .tiles, .accordion, .tabbed: nil
+        }
+    }
 }
 
 extension String {
@@ -66,6 +84,10 @@ extension String {
             return parsed
         } else if self == "list" {
             return .tiles
+        } else if self == "tabs" {
+            return .tabbed
+        } else if self == "scrolling-tiling" || self == "scrollable-tiling" {
+            return .niri
         } else {
             return nil
         }

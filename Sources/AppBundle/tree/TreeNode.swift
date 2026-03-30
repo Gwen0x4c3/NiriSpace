@@ -38,8 +38,8 @@ open class TreeNode: Equatable, AeroAny {
                 if parent.orientation != targetOrientation {
                     die("You can't change \(targetOrientation) weight of nodes located in \(parent.orientation) container")
                 }
-                if parent.layout != .tiles {
-                    die("Weight can be changed only for nodes whose parent has 'tiles' layout")
+                if !parent.layout.keepsOwnWeights {
+                    die("Weight can be changed only for nodes whose parent layout keeps child weights")
                 }
                 adaptiveWeight = newValue
             default:
@@ -75,7 +75,11 @@ open class TreeNode: Equatable, AeroAny {
         if adaptiveWeight == WEIGHT_AUTO {
             self.adaptiveWeight = switch relation {
                 case .tiling(let newParent):
-                    CGFloat(newParent.children.sumOfDouble { $0.getWeight(newParent.orientation) }).div(newParent.children.count) ?? 1
+                    if newParent.layout == .niri {
+                        newParent.nodeWorkspace?.niriDefaultColumnWidth ?? 1
+                    } else {
+                        CGFloat(newParent.children.sumOfDouble { $0.getWeight(newParent.orientation) }).div(newParent.children.count) ?? 1
+                    }
                 case .floatingWindow, .macosNativeFullscreenWindow,
                      .rootTilingContainer, .macosNativeMinimizedWindow,
                      .shimContainerRelation, .macosPopupWindow, .macosNativeHiddenAppWindow:

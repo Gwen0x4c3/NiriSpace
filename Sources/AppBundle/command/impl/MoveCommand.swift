@@ -126,6 +126,9 @@ private let moveOutMacosUnconventionalWindow = "moving macOS fullscreen, minimiz
     _ workspace: Workspace,
     _ direction: CardinalDirection,
 ) {
+    if workspace.rootTilingContainer.layout == .niri {
+        return
+    }
     let prevRoot = workspace.rootTilingContainer
     prevRoot.unbindFromParent()
     // Force tiles layout
