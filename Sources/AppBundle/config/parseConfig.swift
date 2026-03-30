@@ -110,6 +110,8 @@ private let configParser: [String: any ParserProtocol<Config>] = [
     "default-root-container-layout": Parser(\.defaultRootContainerLayout, parseLayout),
     "default-root-container-orientation": Parser(\.defaultRootContainerOrientation, parseDefaultContainerOrientation),
     "niri-default-column-width-percent": Parser(\.niriDefaultColumnWidthPercent, parseNiriDefaultColumnWidthPercent),
+    "focused-window-border-enabled": Parser(\.focusedWindowBorderEnabled, parseBool),
+    "focused-window-border-width": Parser(\.focusedWindowBorderWidth, parseFocusedWindowBorderWidth),
 
     "start-at-login": Parser(\.startAtLogin, parseBool),
     "auto-reload-config": Parser(\.autoReloadConfig, parseBool),
@@ -374,6 +376,11 @@ private func parseDefaultContainerOrientation(_ raw: Json, _ backtrace: ConfigBa
 private func parseNiriDefaultColumnWidthPercent(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
     parseInt(raw, backtrace)
         .filter(.semantic(backtrace, "Must be in [1, 100] range")) { (1 ... 100).contains($0) }
+}
+
+private func parseFocusedWindowBorderWidth(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
+    parseInt(raw, backtrace)
+        .filter(.semantic(backtrace, "Must be in [1, 32] range")) { (1 ... 32).contains($0) }
 }
 
 extension Parsed where Failure == String {
