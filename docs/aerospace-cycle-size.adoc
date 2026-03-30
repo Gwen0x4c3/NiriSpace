@@ -1,0 +1,50 @@
+= aerospace-cycle-size(1)
+include::util/man-attributes.adoc[]
+:manname: aerospace-cycle-size
+// tag::purpose[]
+:manpurpose: Cycle the focused niri column through configured width presets
+// end::purpose[]
+
+// =========================================================== Synopsis
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace cycle-size [-h|--help] [--window-id <window-id>] <width-percent>...
+
+// end::synopsis[]
+
+// =========================================================== Description
+== Description
+
+// tag::body[]
+{manpurpose}
+
+Each `<width-percent>` must be written as a percentage like `33%`, `50%`, or `66%`.
+The percentages are interpreted relative to the visible width of the current monitor.
+
+When the current column width already matches one of the presets, the command switches to the next preset and wraps around.
+When the current width doesn't match any preset, the command switches to the next larger preset, or to the smallest preset if there isn't one.
+
+This command currently works only for windows whose column belongs to `niri` layout.
+
+// =========================================================== Options
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+// =========================================================== Examples
+include::util/conditional-examples-header.adoc[]
+
+* Cycle focused niri column through three presets: +
+`aerospace cycle-size 33% 50% 66%`
+
+* Bind a hotkey in config: +
+`alt-shift-minus = 'cycle-size 33% 50% 66%'`
+
+// end::body[]
+
+// =========================================================== Footer
+include::util/man-footer.adoc[]

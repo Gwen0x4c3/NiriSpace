@@ -26,6 +26,13 @@ include::aerospace-close-all-windows-but-current.adoc[tags=synopsis]
 include::aerospace-close-all-windows-but-current.adoc[tags=purpose]
 include::aerospace-close-all-windows-but-current.adoc[tags=body]
 
+== cycle-size
+----
+include::aerospace-cycle-size.adoc[tags=synopsis]
+----
+include::aerospace-cycle-size.adoc[tags=purpose]
+include::aerospace-cycle-size.adoc[tags=body]
+
 == enable
 ----
 include::aerospace-enable.adoc[tags=synopsis]

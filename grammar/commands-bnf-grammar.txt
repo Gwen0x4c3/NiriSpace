@@ -85,6 +85,8 @@ aerospace -h;
     | config --all-keys
     | config --config-path
 
+    | cycle-size [--window-id <window_id>] <size_percent>... [--window-id <window_id>]
+
     | debug-windows [--window-id <window_id>]
 
     | list-apps [--macos-native-hidden [no] | --format <output_format> | --count | --json]...
@@ -109,6 +111,7 @@ aerospace -h;
 <mode_id> ::= {{{ aerospace config --get mode --keys }}};
 <workspace> ::= {{{ aerospace list-workspaces --monitor all --empty no }}};
 <number> ::= {{{ true }}};
+<size_percent> ::= {{{ true }}};
 <monitor_pattern> ::= {{{ true }}};
 
 <list_workspaces1_flag> ::= --visible [no] | --empty [no] | --format <output_format> | --format <output_format> | --count | --json;

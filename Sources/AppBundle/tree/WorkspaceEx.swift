@@ -3,8 +3,13 @@ import Common
 
 extension Workspace {
     @MainActor
+    func niriColumnWidth(percent: UInt) -> CGFloat {
+        workspaceMonitor.visibleRectPaddedByOuterGaps.width * CGFloat(percent) / 100
+    }
+
+    @MainActor
     var niriDefaultColumnWidth: CGFloat {
-        workspaceMonitor.visibleRectPaddedByOuterGaps.width * CGFloat(config.niriDefaultColumnWidthPercent) / 100
+        niriColumnWidth(percent: UInt(config.niriDefaultColumnWidthPercent))
     }
 
     @MainActor var rootTilingContainer: TilingContainer {
