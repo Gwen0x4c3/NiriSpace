@@ -243,8 +243,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = "0.0.0-SNAPSHOT";
-				PRODUCT_BUNDLE_IDENTIFIER = bobko.aerospace.debug;
-				PRODUCT_NAME = "AeroSpace-Debug";
+				PRODUCT_BUNDLE_IDENTIFIER = com.gwen0x4c3.nirispace.debug;
+				PRODUCT_NAME = "NiriSpace-Debug";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.2;
 			};
@@ -321,8 +321,8 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = "0.0.0-SNAPSHOT";
-				PRODUCT_BUNDLE_IDENTIFIER = bobko.aerospace;
-				PRODUCT_NAME = AeroSpace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gwen0x4c3.nirispace;
+				PRODUCT_NAME = NiriSpace;
 				SDKROOT = macosx;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.2;
