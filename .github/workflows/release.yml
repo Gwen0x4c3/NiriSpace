@@ -25,10 +25,11 @@ jobs:
 
       - name: Build release
         run: |
-          ./build-release.sh --codesign-identity - --build-version "${{ github.ref_name }}"
+          VERSION="${{ github.ref_name }}"
+          ./build-release.sh --codesign-identity - --build-version "${VERSION#v}"
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: AeroSpace/.release/NiriSpace-${{ github.ref_name }}.zip
+          files: AeroSpace/.release/NiriSpace-*.zip
           generate_release_notes: true
