@@ -74,7 +74,13 @@ focused-window-border-width = 4
 
 Download the latest release from [Releases](../../releases), unzip, and move `NiriSpace.app` to `/Applications`.
 
-On first launch, macOS may block the app. Go to **System Settings > Privacy & Security** and click **Open Anyway**.
+> [!NOTE]
+> NiriSpace is not notarized. On first launch macOS Gatekeeper will block it with a warning.
+> The easiest fix is to remove the quarantine attribute after unzipping:
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/NiriSpace.app
+> ```
+> Then launch normally. You only need to do this once.
 
 ### Build from Source
 
