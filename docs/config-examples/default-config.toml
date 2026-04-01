@@ -173,7 +173,6 @@ on-mode-changed = []
     alt-o = 'workspace O'
     alt-p = 'workspace P'
     alt-q = 'workspace Q'
-    alt-r = 'workspace R'
     alt-s = 'workspace S'
     alt-t = 'workspace T'
     alt-u = 'workspace U'
