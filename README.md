@@ -14,6 +14,24 @@ NiriSpace brings [Niri](https://github.com/YaLTeR/niri)'s innovative scrollable 
 
 ## Configuration
 
+### Config File Location
+
+NiriSpace looks for a config file in the following order (first one found wins):
+
+| Priority | Path |
+|---|---|
+| 1 | `~/.nirispace.toml` |
+| 2 | `~/.aerospace.toml` (AeroSpace compatibility) |
+| 3 | `$XDG_CONFIG_HOME/aerospace/aerospace.toml` |
+
+**Recommended:** create `~/.nirispace.toml` as your config file.
+
+You can copy the default config as a starting point:
+
+```bash
+cp /Applications/NiriSpace.app/Contents/Resources/default-config.toml ~/.nirispace.toml
+```
+
 ### Niri Layout Options
 
 ```toml

@@ -2,14 +2,17 @@ import Common
 import Foundation
 
 let configDotfileName = ".aerospace.toml"
+let niriSpaceConfigDotfileName = ".nirispace.toml"
 func findCustomConfigUrl() -> ConfigFile {
+    let home = FileManager.default.homeDirectoryForCurrentUser
     let xdgConfigHome = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"].map { URL(filePath: $0) }
-        ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: ".config/")
+        ?? home.appending(path: ".config/")
     let candidates: [URL] = switch serverArgs.configLocation {
         case .some(let configLocation): [URL(filePath: configLocation)]
         case nil:
             [
-                FileManager.default.homeDirectoryForCurrentUser.appending(path: configDotfileName),
+                home.appending(path: niriSpaceConfigDotfileName),
+                home.appending(path: configDotfileName),
                 xdgConfigHome.appending(path: "aerospace").appending(path: "aerospace.toml"),
             ]
     }
