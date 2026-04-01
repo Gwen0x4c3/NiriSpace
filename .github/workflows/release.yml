@@ -1,0 +1,30 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: ./.github/gh-actions-runner-xcode-select.sh
+
+      - run: brew install bash fish xcbeautify swiftly
+
+      - run: swiftly init --skip-install --assume-yes --verbose && swiftly install
+
+      - name: Build release
+        run: |
+          ./build-release.sh --codesign-identity - --build-version "${{ github.ref_name }}"
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .release/NiriSpace-${{ github.ref_name }}.zip
+          generate_release_notes: true

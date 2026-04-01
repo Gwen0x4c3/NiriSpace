@@ -109,21 +109,11 @@ codesign -v .release/aerospace
 ### PACK ###
 ############
 
-mkdir -p ".release/AeroSpace-v$build_version/manpage" && cp .man/*.1 ".release/AeroSpace-v$build_version/manpage"
-cp -r ./legal ".release/AeroSpace-v$build_version/legal"
-cp -r .shell-completion ".release/AeroSpace-v$build_version/shell-completion"
+mkdir -p ".release/NiriSpace-v$build_version/manpage" && cp .man/*.1 ".release/NiriSpace-v$build_version/manpage"
+cp -r ./legal ".release/NiriSpace-v$build_version/legal"
+cp -r .shell-completion ".release/NiriSpace-v$build_version/shell-completion"
 cd .release
-    mkdir -p "AeroSpace-v$build_version/bin" && cp -r aerospace "AeroSpace-v$build_version/bin"
-    cp -r AeroSpace.app "AeroSpace-v$build_version"
-    zip -r "AeroSpace-v$build_version.zip" "AeroSpace-v$build_version"
+    mkdir -p "NiriSpace-v$build_version/bin" && cp -r aerospace "NiriSpace-v$build_version/bin"
+    cp -r AeroSpace.app "NiriSpace-v$build_version"
+    zip -r "NiriSpace-v$build_version.zip" "NiriSpace-v$build_version"
 cd -
-
-#################
-### Brew Cask ###
-#################
-for cask_name in aerospace aerospace-dev; do
-    ./script/build-brew-cask.sh \
-        --cask-name "$cask_name" \
-        --zip-uri ".release/AeroSpace-v$build_version.zip" \
-        --build-version "$build_version"
-done
