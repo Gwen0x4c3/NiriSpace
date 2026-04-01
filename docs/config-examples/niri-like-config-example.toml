@@ -1,0 +1,112 @@
+# NiriSpace — Niri-like scrollable tiling config example
+#
+# This config replicates a workflow similar to Niri (https://github.com/YaLTeR/niri)
+# on macOS. Windows are arranged as columns in a horizontally scrollable strip.
+# Each window takes a configurable percentage of the screen width.
+
+config-version = 2
+
+# ── Niri Layout ──────────────────────────────────────────────────────────────
+
+# Use niri scrollable column layout as default
+default-root-container-layout = 'niri'
+
+# Each new window occupies 80% of the monitor width by default.
+# Adjust to taste: 50 for half-screen, 100 for full-screen columns.
+niri-default-column-width-percent = 80
+
+# ── Focused Window Border ────────────────────────────────────────────────────
+
+# A visible border makes it easy to spot the active column in the strip.
+focused-window-border-enabled = true
+focused-window-border-width = 4
+
+# ── General ──────────────────────────────────────────────────────────────────
+
+start-at-login = true
+auto-reload-config = true
+
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# ── Gaps ─────────────────────────────────────────────────────────────────────
+
+[gaps]
+    inner.horizontal = 8
+    inner.vertical   = 8
+    outer.left       = 8
+    outer.bottom     = 8
+    outer.top        = 8
+    outer.right      = 8
+
+# ── Key Bindings ─────────────────────────────────────────────────────────────
+
+[mode.main.binding]
+
+    # Open terminal (uncomment and adjust to your terminal app)
+    # alt-enter = '''exec-and-forget osascript -e '
+    # tell application "Terminal"
+    #     do script
+    #     activate
+    # end tell'
+    # '''
+
+    # ── Column width cycling (core niri feature) ────────────────────────────
+    # Cycle the focused column through predefined widths.
+    # Press repeatedly to rotate: 33% → 50% → 66% → 80% → 33% → ...
+    alt-r = 'cycle-size 33% 50% 66% 80%'
+
+    # ── Focus (scrolls the strip in niri layout) ────────────────────────────
+    alt-h = 'focus left'
+    alt-j = 'focus down'
+    alt-k = 'focus up'
+    alt-l = 'focus right'
+
+    # ── Move windows ────────────────────────────────────────────────────────
+    alt-shift-h = 'move left'
+    alt-shift-j = 'move down'
+    alt-shift-k = 'move up'
+    alt-shift-l = 'move right'
+
+    # ── Resize ──────────────────────────────────────────────────────────────
+    alt-minus = 'resize smart -50'
+    alt-equal = 'resize smart +50'
+
+    # ── Layout switching ────────────────────────────────────────────────────
+    alt-slash = 'layout tiles horizontal vertical'
+    alt-comma = 'layout accordion horizontal vertical'
+
+    # ── Workspaces ──────────────────────────────────────────────────────────
+    alt-1 = 'workspace 1'
+    alt-2 = 'workspace 2'
+    alt-3 = 'workspace 3'
+    alt-4 = 'workspace 4'
+    alt-5 = 'workspace 5'
+    alt-6 = 'workspace 6'
+    alt-7 = 'workspace 7'
+    alt-8 = 'workspace 8'
+    alt-9 = 'workspace 9'
+
+    alt-shift-1 = 'move-node-to-workspace 1'
+    alt-shift-2 = 'move-node-to-workspace 2'
+    alt-shift-3 = 'move-node-to-workspace 3'
+    alt-shift-4 = 'move-node-to-workspace 4'
+    alt-shift-5 = 'move-node-to-workspace 5'
+    alt-shift-6 = 'move-node-to-workspace 6'
+    alt-shift-7 = 'move-node-to-workspace 7'
+    alt-shift-8 = 'move-node-to-workspace 8'
+    alt-shift-9 = 'move-node-to-workspace 9'
+
+    alt-tab = 'workspace-back-and-forth'
+    alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+    # ── Service mode ────────────────────────────────────────────────────────
+    alt-shift-semicolon = 'mode service'
+
+[mode.service.binding]
+    esc = ['reload-config', 'mode main']
+    r = ['flatten-workspace-tree', 'mode main']
+    f = ['layout floating tiling', 'mode main']
+    backspace = ['close-all-windows-but-current', 'mode main']

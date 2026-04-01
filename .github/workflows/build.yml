@@ -27,9 +27,15 @@ jobs:
         os: [macos-14, macos-15, macos-26]
     name: build-debug
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: AeroSpace
     steps:
       - run: env # Debug
+        working-directory: .
       - uses: actions/checkout@v6
+        with:
+          path: AeroSpace
       - run: ./.github/gh-actions-runner-xcode-select.sh
       - run: brew install swiftly
       - run: swiftly init --skip-install --assume-yes --verbose && swiftly install
@@ -46,9 +52,15 @@ jobs:
         os: [macos-15, macos-26]
     name: build-release
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: AeroSpace
     steps:
       - run: env # Debug
+        working-directory: .
       - uses: actions/checkout@v6
+        with:
+          path: AeroSpace
       - run: ./.github/gh-actions-runner-xcode-select.sh
       - run: brew install bash fish xcbeautify swiftly
       - run: swiftly init --skip-install --assume-yes --verbose && swiftly install

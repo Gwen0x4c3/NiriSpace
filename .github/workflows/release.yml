@@ -10,8 +10,14 @@ jobs:
     runs-on: macos-15
     permissions:
       contents: write
+    defaults:
+      run:
+        working-directory: AeroSpace
+
     steps:
       - uses: actions/checkout@v6
+        with:
+          path: AeroSpace
 
       - run: ./.github/gh-actions-runner-xcode-select.sh
 
@@ -26,5 +32,5 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: .release/NiriSpace-${{ github.ref_name }}.zip
+          files: AeroSpace/.release/NiriSpace-${{ github.ref_name }}.zip
           generate_release_notes: true

@@ -1,3 +1,4 @@
+# NiriSpace default config
 # Place a copy of this config to ~/.aerospace.toml
 # After that, you can edit ~/.aerospace.toml to your liking
 
@@ -5,35 +6,46 @@
 # Fallback value (if you omit the key): config-version = 1
 config-version = 2
 
-# You can use it to add commands that run after AeroSpace startup.
-# Available commands : https://nikitabobko.github.io/AeroSpace/commands
+# You can use it to add commands that run after startup.
 after-startup-command = []
 
-# Start AeroSpace at login
+# Start NiriSpace at login
 start-at-login = false
 
 # Automatically reload the config when the config file is saved
 # After setting this to true, reload once manually to start the auto-reloading
 auto-reload-config = false
 
-# Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
+# Normalizations eliminate weird tree configurations that don't make sense.
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 
-# See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
 accordion-padding = 30
 
-# Default column width for niri layout, in percent of the monitor width
+# ── Niri Layout Settings ─────────────────────────────────────────────────────
+
+# Default root container layout.
+# Possible values: tiles | accordion | niri
+#   tiles     — traditional i3-style tiling (split horizontal/vertical)
+#   accordion — stacked/tabbed-like layout
+#   niri      — scrollable column strip (Niri-style)
+default-root-container-layout = 'niri'
+
+# Default column width for new windows in niri layout, as a percentage of
+# the monitor width. Only takes effect when default-root-container-layout = 'niri'.
+# For example, 80 means each new window occupies 80% of the screen width.
 niri-default-column-width-percent = 80
 
-# Draw a border around the currently focused window
-focused-window-border-enabled = false
+# ── Focused Window Border ────────────────────────────────────────────────────
+
+# Draw a border around the currently focused window.
+# Especially useful in niri layout to visually identify the active column.
+focused-window-border-enabled = true
 focused-window-border-width = 4
 
-# Possible values: tiles|accordion|niri
-default-root-container-layout = 'tiles'
+# ── General Settings ─────────────────────────────────────────────────────────
 
 # Possible values: horizontal|vertical|auto
 # 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
@@ -41,15 +53,9 @@ default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
 # Mouse follows focus when focused monitor changes
-# Drop it from your config, if you don't like this behavior
-# See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
-# See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
-# Fallback value (if you omit the key): on-focused-monitor-changed = []
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
 # You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
-# Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
-# Also see: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
 automatically-unhide-macos-hidden-apps = false
 
 # List of workspaces that should stay alive even when they contain no windows,
@@ -119,11 +125,16 @@ on-mode-changed = []
     # end tell'
     # '''
 
-    # See: https://nikitabobko.github.io/AeroSpace/commands#layout
+    # Switch layout mode
     alt-slash = 'layout tiles horizontal vertical'
     alt-comma = 'layout accordion horizontal vertical'
 
-    # See: https://nikitabobko.github.io/AeroSpace/commands#focus
+    # ── Niri: cycle column width ─────────────────────────────────────────────
+    # Cycle the focused column through predefined widths (niri layout only).
+    # Each press advances to the next size in the list; wraps around at the end.
+    alt-r = 'cycle-size 33% 50% 66% 80%'
+
+    # Focus navigation (in niri layout, left/right scrolls through the column strip)
     alt-h = 'focus left'
     alt-j = 'focus down'
     alt-k = 'focus up'
