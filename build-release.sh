@@ -46,7 +46,7 @@ xcodebuild-pretty .release/xcodebuild.log clean build \
 
 git checkout .
 
-cp -r ".xcode-build/Build/Products/$xcode_configuration/AeroSpace.app" .release
+cp -r ".xcode-build/Build/Products/$xcode_configuration/NiriSpace.app" .release
 cp -r .build/apple/Products/Release/aerospace .release
 
 ################
@@ -60,24 +60,24 @@ codesign -s "$codesign_identity" .release/aerospace
 ################
 
 expected_layout=$(cat <<EOF
-.release/AeroSpace.app
-.release/AeroSpace.app/Contents
-.release/AeroSpace.app/Contents/_CodeSignature
-.release/AeroSpace.app/Contents/_CodeSignature/CodeResources
-.release/AeroSpace.app/Contents/MacOS
-.release/AeroSpace.app/Contents/MacOS/AeroSpace
-.release/AeroSpace.app/Contents/Resources
-.release/AeroSpace.app/Contents/Resources/default-config.toml
-.release/AeroSpace.app/Contents/Resources/AppIcon.icns
-.release/AeroSpace.app/Contents/Resources/Assets.car
-.release/AeroSpace.app/Contents/Info.plist
-.release/AeroSpace.app/Contents/PkgInfo
+.release/NiriSpace.app
+.release/NiriSpace.app/Contents
+.release/NiriSpace.app/Contents/_CodeSignature
+.release/NiriSpace.app/Contents/_CodeSignature/CodeResources
+.release/NiriSpace.app/Contents/MacOS
+.release/NiriSpace.app/Contents/MacOS/NiriSpace
+.release/NiriSpace.app/Contents/Resources
+.release/NiriSpace.app/Contents/Resources/default-config.toml
+.release/NiriSpace.app/Contents/Resources/AppIcon.icns
+.release/NiriSpace.app/Contents/Resources/Assets.car
+.release/NiriSpace.app/Contents/Info.plist
+.release/NiriSpace.app/Contents/PkgInfo
 EOF
 )
 
-if test "$expected_layout" != "$(find .release/AeroSpace.app)"; then
+if test "$expected_layout" != "$(find .release/NiriSpace.app)"; then
     echo "!!! Expect/Actual layout don't match !!!"
-    find .release/AeroSpace.app
+    find .release/NiriSpace.app
     exit 1
 fi
 
@@ -96,13 +96,13 @@ check-contains-hash() {
     fi
 }
 
-check-universal-binary .release/AeroSpace.app/Contents/MacOS/AeroSpace
+check-universal-binary .release/NiriSpace.app/Contents/MacOS/NiriSpace
 check-universal-binary .release/aerospace
 
-check-contains-hash .release/AeroSpace.app/Contents/MacOS/AeroSpace
+check-contains-hash .release/NiriSpace.app/Contents/MacOS/NiriSpace
 check-contains-hash .release/aerospace
 
-codesign -v .release/AeroSpace.app
+codesign -v .release/NiriSpace.app
 codesign -v .release/aerospace
 
 ############
@@ -114,6 +114,6 @@ cp -r ./legal ".release/NiriSpace-v$build_version/legal"
 cp -r .shell-completion ".release/NiriSpace-v$build_version/shell-completion"
 cd .release
     mkdir -p "NiriSpace-v$build_version/bin" && cp -r aerospace "NiriSpace-v$build_version/bin"
-    cp -r AeroSpace.app "NiriSpace-v$build_version"
+    cp -r NiriSpace.app "NiriSpace-v$build_version"
     zip -r "NiriSpace-v$build_version.zip" "NiriSpace-v$build_version"
 cd -

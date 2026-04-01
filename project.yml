@@ -36,11 +36,11 @@ targets:
         CODE_SIGN_IDENTITY: ${XCODEGEN_AEROSPACE_CODE_SIGN_IDENTITY}
       configs:
         Debug:
-          PRODUCT_NAME: AeroSpace-Debug
-          PRODUCT_BUNDLE_IDENTIFIER: bobko.aerospace.debug
+          PRODUCT_NAME: NiriSpace-Debug
+          PRODUCT_BUNDLE_IDENTIFIER: com.gwen0x4c3.nirispace.debug
         Release:
-          PRODUCT_NAME: AeroSpace
-          PRODUCT_BUNDLE_IDENTIFIER: bobko.aerospace
+          PRODUCT_NAME: NiriSpace
+          PRODUCT_BUNDLE_IDENTIFIER: com.gwen0x4c3.nirispace
           SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
           GCC_TREAT_WARNINGS_AS_ERRORS: YES
     entitlements:
