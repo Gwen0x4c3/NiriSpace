@@ -15,6 +15,10 @@ default-root-container-layout = 'niri'
 # Adjust to taste: 50 for half-screen, 100 for full-screen columns.
 niri-default-column-width-percent = 80
 
+# Hovering another tiled niri window updates focus and native app activation,
+# but does not recenter the strip. Clicking still recenters the clicked window.
+niri-mouse-follows-focus = false
+
 # ── Focused Window Border ────────────────────────────────────────────────────
 
 # A visible border makes it easy to spot the active column in the strip.
@@ -57,6 +61,10 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     # Cycle the focused column through predefined widths.
     # Press repeatedly to rotate: 33% → 50% → 66% → 80% → 33% → ...
     alt-r = 'cycle-size 33% 50% 66% 80%'
+
+    # Stack / unstack the focused window into the column on its left.
+    alt-rightSquareBracket = 'window-stack'
+    alt-shift-rightSquareBracket = 'window-unstack'
 
     # ── Focus (scrolls the strip in niri layout) ────────────────────────────
     alt-h = 'focus left'

@@ -215,10 +215,11 @@ extension TilingContainer {
     private func niriViewportOffset(in workspace: Workspace, viewportWidth: CGFloat) -> CGFloat {
         guard layout == .niri else { return 0 }
         let anchorLeaf = (
-            focus.workspace == workspace
-                ? focus.windowOrNil
-                : workspace.mostRecentWindowRecursive ?? workspace.anyLeafWindowRecursive
-        ) ?? mostRecentWindowRecursive ?? anyLeafWindowRecursive
+            niriViewportAnchor(in: workspace)?.windowOrNil
+                ?? (focus.workspace == workspace ? focus.windowOrNil : nil)
+                ?? workspace.mostRecentWindowRecursive
+                ?? workspace.anyLeafWindowRecursive
+        )
         guard let activeChild = anchorLeaf?.directChild(of: self) ?? mostRecentChild ?? children.first else { return 0 }
         let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
         return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2

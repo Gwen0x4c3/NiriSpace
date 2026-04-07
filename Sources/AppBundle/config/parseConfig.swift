@@ -110,6 +110,7 @@ private let configParser: [String: any ParserProtocol<Config>] = [
     "default-root-container-layout": Parser(\.defaultRootContainerLayout, parseLayout),
     "default-root-container-orientation": Parser(\.defaultRootContainerOrientation, parseDefaultContainerOrientation),
     "niri-default-column-width-percent": Parser(\.niriDefaultColumnWidthPercent, parseNiriDefaultColumnWidthPercent),
+    "niri-mouse-follows-focus": Parser(\.niriMouseFollowsFocus, parseBool),
     "focused-window-border-enabled": Parser(\.focusedWindowBorderEnabled, parseBool),
     "focused-window-border-width": Parser(\.focusedWindowBorderWidth, parseFocusedWindowBorderWidth),
 

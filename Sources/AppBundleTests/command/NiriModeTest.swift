@@ -98,4 +98,56 @@ final class NiriModeTest: XCTestCase {
         assertEquals(result.exitCode, 0)
         assertEquals(root.layoutDescription, .niri([.window(1), .window(2)]))
     }
+
+    func testHoverFocusDoesNotRecenterNiriViewport() async throws {
+        config.defaultRootContainerLayout = .niri
+        let workspace = Workspace.get(byName: name)
+
+        let window1 = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
+        let window2 = TestWindow.new(id: 2, parent: workspace.rootTilingContainer)
+        let window3 = TestWindow.new(id: 3, parent: workspace.rootTilingContainer)
+
+        XCTAssertTrue(window2.focusWindow())
+        try await workspace.layoutWorkspace()
+
+        let window1X = window1.rectForTests?.topLeftX
+        let window2X = window2.rectForTests?.topLeftX
+        let window3X = window3.rectForTests?.topLeftX
+
+        XCTAssertTrue(setFocus(to: LiveFocus(windowOrNil: window1, workspace: workspace), mode: .hoverWithoutRecentering))
+        try await workspace.layoutWorkspace()
+
+        assertEquals(focus.windowOrNil?.windowId, 1)
+        assertEquals(window1.rectForTests?.topLeftX, window1X)
+        assertEquals(window2.rectForTests?.topLeftX, window2X)
+        assertEquals(window3.rectForTests?.topLeftX, window3X)
+    }
+
+    func testNormalFocusAfterHoverRecentersNiriViewport() async throws {
+        config.defaultRootContainerLayout = .niri
+        let workspace = Workspace.get(byName: name)
+
+        let window1 = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
+        let window2 = TestWindow.new(id: 2, parent: workspace.rootTilingContainer)
+        let window3 = TestWindow.new(id: 3, parent: workspace.rootTilingContainer)
+
+        XCTAssertTrue(window2.focusWindow())
+        try await workspace.layoutWorkspace()
+
+        let initialWindow1X = window1.rectForTests?.topLeftX
+        let initialWindow2X = window2.rectForTests?.topLeftX
+        let initialWindow3X = window3.rectForTests?.topLeftX
+
+        XCTAssertTrue(setFocus(to: LiveFocus(windowOrNil: window1, workspace: workspace), mode: .hoverWithoutRecentering))
+        try await workspace.layoutWorkspace()
+
+        XCTAssertTrue(setFocus(to: LiveFocus(windowOrNil: window1, workspace: workspace)))
+        try await workspace.layoutWorkspace()
+
+        assertEquals(focus.windowOrNil?.windowId, 1)
+        XCTAssertNotEqual(window1.rectForTests?.topLeftX, initialWindow1X)
+        XCTAssertNotEqual(window2.rectForTests?.topLeftX, initialWindow2X)
+        XCTAssertNotEqual(window3.rectForTests?.topLeftX, initialWindow3X)
+        assertEquals(window1.rectForTests?.topLeftX, CGFloat(192))
+    }
 }

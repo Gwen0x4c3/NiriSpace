@@ -38,6 +38,8 @@ let subcommandDescriptions = [
     ["  swap", "Swaps the focused window with another window."],
     ["  trigger-binding", "Trigger AeroSpace binding as if it was pressed by user"],
     ["  volume", "Manipulate volume"],
+    ["  window-stack", "Stack the focused niri window onto the column to its left"],
+    ["  window-unstack", "Unstack the focused window into its own column"],
     ["  workspace-back-and-forth", "Switch between the focused workspace and previously focused workspace back and forth"],
     ["  workspace", "Focus the specified workspace"],
 ]

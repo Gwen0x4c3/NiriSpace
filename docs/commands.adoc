@@ -203,6 +203,20 @@ include::./aerospace-volume.adoc[tags=synopsis]
 include::./aerospace-volume.adoc[tags=purpose]
 include::./aerospace-volume.adoc[tags=body]
 
+== window-stack
+----
+include::./aerospace-window-stack.adoc[tags=synopsis]
+----
+include::./aerospace-window-stack.adoc[tags=purpose]
+include::./aerospace-window-stack.adoc[tags=body]
+
+== window-unstack
+----
+include::./aerospace-window-unstack.adoc[tags=synopsis]
+----
+include::./aerospace-window-unstack.adoc[tags=purpose]
+include::./aerospace-window-unstack.adoc[tags=body]
+
 == workspace
 ----
 include::aerospace-workspace.adoc[tags=synopsis]

@@ -1,0 +1,40 @@
+= aerospace-window-unstack(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Unstack the focused niri window into its own column
+// end::purpose[]
+:manname: aerospace-window-unstack
+
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace window-unstack [-h|--help] [--window-id <window-id>]
+
+// end::synopsis[]
+
+== Description
+
+// tag::body[]
+{manpurpose}
+
+This command currently works only for windows inside a vertically stacked `niri` column.
+The focused window is removed from the stack and reinserted as its own direct `niri` column immediately to the right.
+
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+include::util/conditional-examples-header.adoc[]
+
+* Unstack the focused niri window into its own column: +
+`aerospace window-unstack`
+
+* Bind a hotkey in config: +
+`alt-shift-rightSquareBracket = 'window-unstack'`
+
+// end::body[]
+
+include::util/man-footer.adoc[]
