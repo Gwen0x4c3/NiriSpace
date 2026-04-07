@@ -54,7 +54,7 @@ final class WindowStackCommandTest: XCTestCase {
         let result = try await parseCommand("window-unstack").cmdOrDie.run(.defaultEnv, .emptyStdin)
 
         assertEquals(result.exitCode, 0)
-        assertEquals(root.layoutDescription, .niri([.window(1), .window(2), .window(3)]))
+        assertEquals(root.layoutDescription, .niri([.window(1), .v_tiles([.window(2)]), .window(3)]))
         assertEquals(focus.windowOrNil?.windowId, 3)
     }
 

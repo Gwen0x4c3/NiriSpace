@@ -108,6 +108,7 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
     return status
 }
 extension Window {
+    @discardableResult
     @MainActor func focusWindow(mode: FocusTransitionMode = .normal) -> Bool {
         if let focus = toLiveFocusOrNil() {
             return setFocus(to: focus, mode: mode)

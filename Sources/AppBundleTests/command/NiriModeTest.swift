@@ -103,9 +103,12 @@ final class NiriModeTest: XCTestCase {
         config.defaultRootContainerLayout = .niri
         let workspace = Workspace.get(byName: name)
 
-        let window1 = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
-        let window2 = TestWindow.new(id: 2, parent: workspace.rootTilingContainer)
-        let window3 = TestWindow.new(id: 3, parent: workspace.rootTilingContainer)
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+        let window3 = TestWindow.new(id: 3, parent: workspace)
+        try await window3.relayoutWindow(on: workspace, forceTile: true)
 
         XCTAssertTrue(window2.focusWindow())
         try await workspace.layoutWorkspace()
@@ -127,9 +130,12 @@ final class NiriModeTest: XCTestCase {
         config.defaultRootContainerLayout = .niri
         let workspace = Workspace.get(byName: name)
 
-        let window1 = TestWindow.new(id: 1, parent: workspace.rootTilingContainer)
-        let window2 = TestWindow.new(id: 2, parent: workspace.rootTilingContainer)
-        let window3 = TestWindow.new(id: 3, parent: workspace.rootTilingContainer)
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+        let window3 = TestWindow.new(id: 3, parent: workspace)
+        try await window3.relayoutWindow(on: workspace, forceTile: true)
 
         XCTAssertTrue(window2.focusWindow())
         try await workspace.layoutWorkspace()
