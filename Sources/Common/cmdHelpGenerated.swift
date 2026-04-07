@@ -151,6 +151,12 @@ let volume_help_generated = """
        OR: volume [-h|--help] (mute-toggle|mute-off|mute-on) [--no-gui]
        OR: volume [-h|--help] set <number> [--no-gui]
     """
+let window_stack_help_generated = """
+    USAGE: window-stack [-h|--help] [--window-id <window-id>]
+    """
+let window_unstack_help_generated = """
+    USAGE: window-unstack [-h|--help] [--window-id <window-id>]
+    """
 let workspace_back_and_forth_help_generated = """
     USAGE: workspace-back-and-forth [-h|--help]
     """

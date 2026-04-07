@@ -241,6 +241,16 @@ final class ConfigTest: XCTestCase {
         )
     }
 
+    func testParseNiriMouseFollowsFocus() {
+        let (config, errors) = parseConfig(
+            """
+            niri-mouse-follows-focus = true
+            """,
+        )
+        assertEquals(errors, [])
+        XCTAssertTrue(config.niriMouseFollowsFocus)
+    }
+
     func testParseFocusedWindowBorderConfig() {
         let (config, errors) = parseConfig(
             """

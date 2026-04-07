@@ -53,6 +53,26 @@ enum GlobalObserver {
         nc.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main, using: onNotif)
         nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main, using: onNotif)
 
+        NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { _ in
+            Task { @MainActor in
+                guard config.niriMouseFollowsFocus else { return }
+                guard currentlyManipulatedWithMouseWindowId == nil else { return }
+                guard let token: RunSessionGuard = .isServerEnabled else { return }
+
+                let workspace = mouseLocation.monitorApproximation.activeWorkspace
+                let root = workspace.rootTilingContainer
+                guard root.layout == .niri else { return }
+                guard let hovered = mouseLocation.findIn(tree: root, virtual: false) else { return }
+                guard hovered != focus.windowOrNil else { return }
+
+                _ = try await runLightSession(.globalObserver("mouseMoved"), token) {
+                    guard let live = hovered.toLiveFocusOrNil() else { return false }
+                    expectNextNativeFocusTransition(windowId: hovered.windowId, mode: .hoverWithoutRecentering)
+                    return setFocus(to: live, mode: .hoverWithoutRecentering)
+                }
+            }
+        }
+
         NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { _ in
             // todo reduce number of refreshSession in the callback
             //  resetManipulatedWithMouseIfPossible might call its own refreshSession
@@ -71,6 +91,14 @@ enum GlobalObserver {
                     // Detect close button clicks for unfocused windows. Yes, kAXUIElementDestroyedNotification is that unreliable
                     //  And trigger new window detection that could be delayed due to mouseDown event
                     default:
+                        if config.niriMouseFollowsFocus,
+                           let focusedWindow = focus.windowOrNil,
+                           focus.workspace.rootTilingContainer.layout == .niri,
+                           mouseLocation.findIn(tree: focus.workspace.rootTilingContainer, virtual: false) == focusedWindow,
+                           let live = focusedWindow.toLiveFocusOrNil()
+                        {
+                            _ = setFocus(to: live)
+                        }
                         scheduleRefreshSession(.globalObserverLeftMouseUp)
                 }
             }

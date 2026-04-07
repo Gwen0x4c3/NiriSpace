@@ -8,7 +8,7 @@
         return
     }
     if nativeFocused?.windowId != lastKnownNativeFocusedWindowId {
-        _ = nativeFocused?.focusWindow()
+        _ = nativeFocused?.focusWindow(mode: consumePendingNativeFocusTransition(for: nativeFocused?.windowId))
         lastKnownNativeFocusedWindowId = nativeFocused?.windowId
     }
     nativeFocused?.macAppUnsafe.lastNativeFocusedWindowId = nativeFocused?.windowId

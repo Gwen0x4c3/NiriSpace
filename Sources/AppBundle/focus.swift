@@ -26,6 +26,11 @@ struct LiveFocus: AeroAny, Equatable {
     }
 }
 
+enum FocusTransitionMode {
+    case normal
+    case hoverWithoutRecentering
+}
+
 /// "old", "captured", "frozen in time" Focus
 /// It's safe to keep a hard reference to this object.
 /// Unlike in LiveFocus, information inside FrozenFocus isn't guaranteed to be self-consistent.
@@ -53,6 +58,11 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
     let monitor = mainMonitor
     return FrozenFocus(windowId: nil, workspaceName: monitor.activeWorkspace.name, monitorId_oneBased: monitor.monitorId_oneBased ?? 0)
 }()
+@MainActor private var _niriViewportAnchorByWorkspace: [String: FrozenFocus] = {
+    let initialFocus = _focus
+    return [initialFocus.workspaceName: initialFocus]
+}()
+@MainActor private var _pendingNativeFocusTransition: (windowId: UInt32?, mode: FocusTransitionMode)? = nil
 
 /// Global focus.
 /// Commands must be cautious about accessing this property directly. There are legitimate cases.
@@ -60,7 +70,30 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
 /// AEROSPACE_WORKSPACE env before accessing the global focus.
 @MainActor var focus: LiveFocus { _focus.live }
 
-@MainActor func setFocus(to newFocus: LiveFocus) -> Bool {
+@MainActor func niriViewportAnchor(in workspace: Workspace) -> LiveFocus? {
+    _niriViewportAnchorByWorkspace[workspace.name]?.live.takeIf { $0.workspace == workspace }
+}
+
+@MainActor private func rememberNiriViewportAnchor(_ focus: LiveFocus) {
+    _niriViewportAnchorByWorkspace[focus.workspace.name] = focus.frozen
+}
+
+@MainActor func expectNextNativeFocusTransition(windowId: UInt32?, mode: FocusTransitionMode) {
+    _pendingNativeFocusTransition = (windowId, mode)
+}
+
+@MainActor func consumePendingNativeFocusTransition(for windowId: UInt32?) -> FocusTransitionMode {
+    defer { _pendingNativeFocusTransition = nil }
+    guard let pending = _pendingNativeFocusTransition, pending.windowId == windowId else {
+        return .normal
+    }
+    return pending.mode
+}
+
+@MainActor func setFocus(to newFocus: LiveFocus, mode: FocusTransitionMode = .normal) -> Bool {
+    if mode == .normal {
+        rememberNiriViewportAnchor(newFocus)
+    }
     if _focus == newFocus.frozen { return true }
     let oldFocus = focus
     // Normalize mruWindow when focus away from a workspace
@@ -75,9 +108,10 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
     return status
 }
 extension Window {
-    @MainActor func focusWindow() -> Bool {
+    @discardableResult
+    @MainActor func focusWindow(mode: FocusTransitionMode = .normal) -> Bool {
         if let focus = toLiveFocusOrNil() {
-            return setFocus(to: focus)
+            return setFocus(to: focus, mode: mode)
         } else {
             // todo We should also exit-native-hidden/unminimize[/exit-native-fullscreen?] window if we want to fix ID-B6E178F2
             //      and retry to focus the window. Otherwise, it's not possible to focus minimized/hidden windows

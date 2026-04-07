@@ -1,0 +1,41 @@
+= aerospace-window-stack(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Stack the focused niri window onto the column to its left
+// end::purpose[]
+:manname: aerospace-window-stack
+
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace window-stack [-h|--help] [--window-id <window-id>]
+
+// end::synopsis[]
+
+== Description
+
+// tag::body[]
+{manpurpose}
+
+This command currently works only when the focused window already occupies its own top-level column in `niri` layout.
+If the left neighbour is already a vertical stacked column, the window is appended to that stack.
+Otherwise, the left neighbour is wrapped into a vertical column and the focused window is added to it.
+
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+include::util/conditional-examples-header.adoc[]
+
+* Stack the focused niri window onto the column to its left: +
+`aerospace window-stack`
+
+* Bind a hotkey in config: +
+`alt-rightSquareBracket = 'window-stack'`
+
+// end::body[]
+
+include::util/man-footer.adoc[]
