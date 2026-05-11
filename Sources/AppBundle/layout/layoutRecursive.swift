@@ -108,18 +108,38 @@ extension Window {
 
 extension TilingContainer {
     private static let niriViewportWidthKey = TreeNodeUserDataKey<CGFloat>(key: "niriViewportWidthKey")
+    static let niriAnimatedOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriAnimatedOffsetKey")
 
     @MainActor
     fileprivate func layoutNiri(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
         normalizeNiriColumnWidthsForViewport(width)
         var virtualPoint = virtual.topLeftCorner
-        let viewportOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
+        let targetOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
 
-        for child in children {
+        // Use animated offset if available, otherwise snap to target
+        let animatedOffset = getUserData(key: Self.niriAnimatedOffsetKey) ?? targetOffset
+        let viewportOffset: CGFloat
+
+        if config.niriScrollAnimationDuration > 0 && animatedOffset != targetOffset {
+            if !NiriAnimationDriver.shared.isAnimating {
+                NiriAnimationDriver.shared.startAnimation(container: self, from: animatedOffset, to: targetOffset)
+            }
+            viewportOffset = animatedOffset
+        } else {
+            viewportOffset = targetOffset
+            cleanUserData(key: Self.niriAnimatedOffsetKey)
+        }
+
+        let rawGap = context.resolvedGaps.inner.horizontal.toDouble()
+        let lastIndex = children.indices.last
+
+        for (i, child) in children.enumerated() {
             let childWidth = child.getWeight(.h)
+            let gap = rawGap - (i == 0 ? rawGap / 2 : 0) - (i == lastIndex ? rawGap / 2 : 0)
+            let gapOffset = i == 0 ? 0 : rawGap / 2
             try await child.layoutRecursive(
-                CGPoint(x: point.x + virtualPoint.x - virtual.minX - viewportOffset, y: point.y),
-                width: childWidth,
+                CGPoint(x: point.x + virtualPoint.x - virtual.minX - viewportOffset + gapOffset, y: point.y),
+                width: childWidth - gap,
                 height: height,
                 virtual: Rect(
                     topLeftX: virtualPoint.x,

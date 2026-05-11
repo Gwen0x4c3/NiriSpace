@@ -111,6 +111,7 @@ private let configParser: [String: any ParserProtocol<Config>] = [
     "default-root-container-orientation": Parser(\.defaultRootContainerOrientation, parseDefaultContainerOrientation),
     "niri-default-column-width-percent": Parser(\.niriDefaultColumnWidthPercent, parseNiriDefaultColumnWidthPercent),
     "niri-mouse-follows-focus": Parser(\.niriMouseFollowsFocus, parseBool),
+    "niri-scroll-animation-duration": Parser(\.niriScrollAnimationDuration, parseNiriScrollAnimationDuration),
     "focused-window-border-enabled": Parser(\.focusedWindowBorderEnabled, parseBool),
     "focused-window-border-width": Parser(\.focusedWindowBorderWidth, parseFocusedWindowBorderWidth),
 
@@ -376,6 +377,11 @@ private func parseDefaultContainerOrientation(_ raw: Json, _ backtrace: ConfigBa
 private func parseNiriDefaultColumnWidthPercent(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
     parseInt(raw, backtrace)
         .filter(.semantic(backtrace, "Must be in [1, 100] range")) { (1 ... 100).contains($0) }
+}
+
+private func parseNiriScrollAnimationDuration(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
+    parseInt(raw, backtrace)
+        .filter(.semantic(backtrace, "Must be >= 0")) { $0 >= 0 }
 }
 
 private func parseFocusedWindowBorderWidth(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {

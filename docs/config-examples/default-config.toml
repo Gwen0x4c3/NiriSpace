@@ -42,6 +42,10 @@ niri-default-column-width-percent = 80
 # but does not recenter the strip. Clicking still recenters the clicked window.
 niri-mouse-follows-focus = false
 
+# Duration (in milliseconds) of the smooth scroll animation when switching
+# focus between columns in niri layout. Set to 0 to disable animation.
+niri-scroll-animation-duration = 300
+
 # ── Focused Window Border ────────────────────────────────────────────────────
 
 # Draw a border around the currently focused window.

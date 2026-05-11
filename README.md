@@ -94,6 +94,7 @@ focused-window-border-width = 4
 | `default-root-container-layout` | `'tiles'` | Root container layout. Now accepts `'niri'` in addition to `'tiles'` and `'accordion'`. |
 | `niri-default-column-width-percent` | `80` | Default column width (as % of monitor width) for new windows in niri layout. |
 | `niri-mouse-follows-focus` | `false` | In niri layout only, hovering another tiled window updates focus/native app activation without recentering the strip. A click still recenters the clicked window. |
+| `niri-scroll-animation-duration` | `300` | Duration (in ms) of the smooth scroll animation when switching focus between niri columns. Set to `0` to disable animation. |
 | `focused-window-border-enabled` | `false` | Whether to draw a border around the focused window. |
 | `focused-window-border-width` | `4` | Width of the focused window border in pixels. |
 
