@@ -235,10 +235,49 @@ extension TilingContainer {
     @MainActor
     private func niriViewportOffset(in workspace: Workspace, viewportWidth: CGFloat) -> CGFloat {
         guard layout == .niri else { return 0 }
-        let anchorLeaf = niriViewportAnchor(in: workspace)?.windowOrNil
-        guard let activeChild = anchorLeaf?.directChild(of: self) ?? (children.count == 1 ? children.first : nil) else { return 0 }
+        let totalWidth = children.sumOfDouble { $0.getWeight(.h) }
+
+        if let anchorLeaf = niriViewportAnchor(in: workspace)?.windowOrNil,
+           let activeChild = anchorLeaf.directChild(of: self)
+        {
+            let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
+            return (leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2)
+                .coerce(in: 0 ... max(0, totalWidth - viewportWidth))
+        }
+
+        guard let activeChild = (
+            (focus.workspace == workspace ? focus.windowOrNil : nil)?.directChild(of: self)
+                ?? workspace.mostRecentWindowRecursive?.directChild(of: self)
+                ?? workspace.anyLeafWindowRecursive?.directChild(of: self)
+                ?? (children.count == 1 ? children.first : nil)
+        ) else { return 0 }
+
         let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
-        return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
+        let childWidth = activeChild.getWeight(.h)
+
+        if children.count == 1 {
+            return (leadingWidth + childWidth / 2 - viewportWidth / 2)
+                .coerce(in: 0 ... max(0, totalWidth - viewportWidth))
+        }
+
+        // Default multi-column behavior: keep the strip left-aligned as much as possible,
+        // but minimally scroll so the focused column stays fully visible.
+        let previousOffset = getUserData(key: Self.niriLastViewportOffsetKey) ?? 0
+        let childMinX = leadingWidth
+        let childMaxX = leadingWidth + childWidth
+
+        let targetOffset: CGFloat
+        if childWidth >= viewportWidth {
+            targetOffset = childMinX
+        } else if childMinX < previousOffset {
+            targetOffset = childMinX
+        } else if childMaxX > previousOffset + viewportWidth {
+            targetOffset = childMaxX - viewportWidth
+        } else {
+            targetOffset = previousOffset
+        }
+
+        return targetOffset.coerce(in: 0 ... max(0, totalWidth - viewportWidth))
     }
 
     @MainActor
