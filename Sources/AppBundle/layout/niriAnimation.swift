@@ -20,6 +20,10 @@ final class NiriAnimationDriver {
     func isAnimating(container: TilingContainer) -> Bool { isAnimating && targetContainer === container }
 
     func startAnimation(container: TilingContainer, from: CGFloat, to: CGFloat) {
+        guard config.niriScrollAnimationDuration > 0 else {
+            stopAnimation()
+            return
+        }
         // If already animating, update target from current animated position
         if isAnimating(container: container) {
             fromOffset = container.getUserData(key: TilingContainer.niriAnimatedOffsetKey) ?? from
@@ -50,6 +54,7 @@ final class NiriAnimationDriver {
     }
 
     func stopAnimation() {
+        targetContainer?.cleanUserData(key: TilingContainer.niriAnimatedOffsetKey)
         timer?.cancel()
         timer = nil
         targetContainer = nil
@@ -60,6 +65,13 @@ final class NiriAnimationDriver {
             stopAnimation()
             return
         }
+        guard let workspace = container.nodeWorkspace,
+              workspace.isVisible,
+              focus.workspace == workspace
+        else {
+            stopAnimation()
+            return
+        }
 
         let elapsed = Double(DispatchTime.now().uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000_000.0
         let t = CGFloat(min(elapsed / duration, 1.0))
@@ -67,13 +79,10 @@ final class NiriAnimationDriver {
         container.putUserData(key: TilingContainer.niriAnimatedOffsetKey, data: interpolated)
 
         // Re-layout just this workspace
-        if let workspace = container.nodeWorkspace {
-            try? await workspace.layoutWorkspace()
-        }
+        try? await workspace.layoutWorkspace()
 
         if t >= 1.0 {
             // Animation complete: keep niriLastViewportOffsetKey, clean transient state.
-            container.cleanUserData(key: TilingContainer.niriAnimatedOffsetKey)
             stopAnimation()
             scheduleCancellableCompleteRefreshSession(.hotkeyBinding)
         }

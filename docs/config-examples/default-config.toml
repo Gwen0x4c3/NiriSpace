@@ -35,8 +35,8 @@ default-root-container-layout = 'niri'
 
 # Default column width for new windows in niri layout, as a percentage of
 # the monitor width. Only takes effect when default-root-container-layout = 'niri'.
-# For example, 80 means each new window occupies 80% of the screen width.
-niri-default-column-width-percent = 80
+# For example, 50 means each new window occupies 50% of the screen width.
+niri-default-column-width-percent = 50
 
 # Hovering another tiled niri window updates focus and native app activation.
 # It does not recenter the strip; use niri-center for explicit centering.
@@ -141,6 +141,10 @@ on-mode-changed = []
     # Cycle the focused column through predefined widths (niri layout only).
     # Each press advances to the next size in the list; wraps around at the end.
     alt-r = 'cycle-size 33% 50% 66% 80%'
+
+    # Reset all niri column widths in the current workspace back to the configured
+    # default width above (50% by default).
+    alt-shift-r = 'balance-sizes'
 
     # Center the focused niri column. By default, niri layout keeps columns
     # left-aligned so multiple windows can stay visible side-by-side.

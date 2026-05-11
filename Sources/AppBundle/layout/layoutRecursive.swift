@@ -121,8 +121,16 @@ extension TilingContainer {
         // Use animated offset if available, otherwise animate from the last rendered offset.
         let animatedOffset = getUserData(key: Self.niriAnimatedOffsetKey) ?? lastOffset
         let viewportOffset: CGFloat
+        let shouldAnimateViewport =
+            config.niriScrollAnimationDuration > 0 &&
+            context.workspace.isVisible &&
+            focus.workspace == context.workspace
 
-        if config.niriScrollAnimationDuration > 0 && animatedOffset != targetOffset {
+        if !shouldAnimateViewport, NiriAnimationDriver.shared.isAnimating(container: self) {
+            NiriAnimationDriver.shared.stopAnimation()
+        }
+
+        if shouldAnimateViewport && abs(animatedOffset - targetOffset) > 0.5 {
             NiriAnimationDriver.shared.startAnimation(container: self, from: animatedOffset, to: targetOffset)
             viewportOffset = animatedOffset
         } else {
@@ -241,8 +249,7 @@ extension TilingContainer {
            let activeChild = anchorLeaf.directChild(of: self)
         {
             let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
-            return (leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2)
-                .coerce(in: 0 ... max(0, totalWidth - viewportWidth))
+            return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
         }
 
         guard let activeChild = (
@@ -256,13 +263,14 @@ extension TilingContainer {
         let childWidth = activeChild.getWeight(.h)
 
         if children.count == 1 {
-            return (leadingWidth + childWidth / 2 - viewportWidth / 2)
-                .coerce(in: 0 ... max(0, totalWidth - viewportWidth))
+            return leadingWidth + childWidth / 2 - viewportWidth / 2
         }
 
         // Default multi-column behavior: keep the strip left-aligned as much as possible,
         // but minimally scroll so the focused column stays fully visible.
-        let previousOffset = getUserData(key: Self.niriLastViewportOffsetKey) ?? 0
+        let maxOffset = max(0, totalWidth - viewportWidth)
+        let previousOffset = (getUserData(key: Self.niriLastViewportOffsetKey) ?? 0)
+            .coerce(in: 0 ... maxOffset)
         let childMinX = leadingWidth
         let childMaxX = leadingWidth + childWidth
 
@@ -277,7 +285,7 @@ extension TilingContainer {
             targetOffset = previousOffset
         }
 
-        return targetOffset.coerce(in: 0 ... max(0, totalWidth - viewportWidth))
+        return targetOffset.coerce(in: 0 ... maxOffset)
     }
 
     @MainActor

@@ -15,8 +15,9 @@ final class ConfigTest: XCTestCase {
 
     func testParseDefaultConfig() {
         let toml = try! String(contentsOf: projectRoot.appending(component: "docs/config-examples/default-config.toml"), encoding: .utf8)
-        let (_, errors) = parseConfig(toml)
+        let (config, errors) = parseConfig(toml)
         assertEquals(errors, [])
+        assertEquals(config.niriDefaultColumnWidthPercent, 50)
     }
 
     func testConfigVersionOutOfBounds() {
@@ -229,11 +230,11 @@ final class ConfigTest: XCTestCase {
     func testParseNiriDefaultColumnWidthPercent() {
         let (config, errors) = parseConfig(
             """
-            niri-default-column-width-percent = 80
+            niri-default-column-width-percent = 50
             """,
         )
         assertEquals(errors, [])
-        assertEquals(config.niriDefaultColumnWidthPercent, 80)
+        assertEquals(config.niriDefaultColumnWidthPercent, 50)
 
         assertEquals(
             parseConfig("niri-default-column-width-percent = 101").errors,
