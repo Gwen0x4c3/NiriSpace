@@ -17,15 +17,18 @@ final class NiriAnimationDriver {
     private weak var targetContainer: TilingContainer?
 
     var isAnimating: Bool { timer != nil }
+    func isAnimating(container: TilingContainer) -> Bool { isAnimating && targetContainer === container }
 
     func startAnimation(container: TilingContainer, from: CGFloat, to: CGFloat) {
         // If already animating, update target from current animated position
-        if isAnimating {
+        if isAnimating(container: container) {
             fromOffset = container.getUserData(key: TilingContainer.niriAnimatedOffsetKey) ?? from
             toOffset = to
             duration = TimeInterval(config.niriScrollAnimationDuration) / 1000.0
             startTime = .now()
             return
+        } else if isAnimating {
+            stopAnimation()
         }
 
         targetContainer = container
@@ -69,7 +72,7 @@ final class NiriAnimationDriver {
         }
 
         if t >= 1.0 {
-            // Animation complete: clean up and do final refresh for border etc.
+            // Animation complete: keep niriLastViewportOffsetKey, clean transient state.
             container.cleanUserData(key: TilingContainer.niriAnimatedOffsetKey)
             stopAnimation()
             scheduleCancellableCompleteRefreshSession(.hotkeyBinding)

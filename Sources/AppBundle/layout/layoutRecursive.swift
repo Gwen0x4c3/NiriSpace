@@ -109,6 +109,7 @@ extension Window {
 extension TilingContainer {
     private static let niriViewportWidthKey = TreeNodeUserDataKey<CGFloat>(key: "niriViewportWidthKey")
     static let niriAnimatedOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriAnimatedOffsetKey")
+    static let niriLastViewportOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriLastViewportOffsetKey")
 
     @MainActor
     fileprivate func layoutNiri(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
@@ -116,19 +117,19 @@ extension TilingContainer {
         var virtualPoint = virtual.topLeftCorner
         let targetOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
 
-        // Use animated offset if available, otherwise snap to target
-        let animatedOffset = getUserData(key: Self.niriAnimatedOffsetKey) ?? targetOffset
+        let lastOffset = getUserData(key: Self.niriLastViewportOffsetKey) ?? targetOffset
+        // Use animated offset if available, otherwise animate from the last rendered offset.
+        let animatedOffset = getUserData(key: Self.niriAnimatedOffsetKey) ?? lastOffset
         let viewportOffset: CGFloat
 
         if config.niriScrollAnimationDuration > 0 && animatedOffset != targetOffset {
-            if !NiriAnimationDriver.shared.isAnimating {
-                NiriAnimationDriver.shared.startAnimation(container: self, from: animatedOffset, to: targetOffset)
-            }
+            NiriAnimationDriver.shared.startAnimation(container: self, from: animatedOffset, to: targetOffset)
             viewportOffset = animatedOffset
         } else {
             viewportOffset = targetOffset
             cleanUserData(key: Self.niriAnimatedOffsetKey)
         }
+        putUserData(key: Self.niriLastViewportOffsetKey, data: viewportOffset)
 
         let rawGap = context.resolvedGaps.inner.horizontal.toDouble()
         let lastIndex = children.indices.last
@@ -234,13 +235,8 @@ extension TilingContainer {
     @MainActor
     private func niriViewportOffset(in workspace: Workspace, viewportWidth: CGFloat) -> CGFloat {
         guard layout == .niri else { return 0 }
-        let anchorLeaf = (
-            niriViewportAnchor(in: workspace)?.windowOrNil
-                ?? (focus.workspace == workspace ? focus.windowOrNil : nil)
-                ?? workspace.mostRecentWindowRecursive
-                ?? workspace.anyLeafWindowRecursive
-        )
-        guard let activeChild = anchorLeaf?.directChild(of: self) ?? mostRecentChild ?? children.first else { return 0 }
+        let anchorLeaf = niriViewportAnchor(in: workspace)?.windowOrNil
+        guard let activeChild = anchorLeaf?.directChild(of: self) ?? (children.count == 1 ? children.first : nil) else { return 0 }
         let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
         return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
     }

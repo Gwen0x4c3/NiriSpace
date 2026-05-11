@@ -38,12 +38,12 @@ default-root-container-layout = 'niri'
 # For example, 80 means each new window occupies 80% of the screen width.
 niri-default-column-width-percent = 80
 
-# Hovering another tiled niri window updates focus and native app activation,
-# but does not recenter the strip. Clicking still recenters the clicked window.
+# Hovering another tiled niri window updates focus and native app activation.
+# It does not recenter the strip; use niri-center for explicit centering.
 niri-mouse-follows-focus = false
 
-# Duration (in milliseconds) of the smooth scroll animation when switching
-# focus between columns in niri layout. Set to 0 to disable animation.
+# Duration (in milliseconds) of explicit niri viewport scroll animations,
+# such as niri-center. Set to 0 to disable animation.
 niri-scroll-animation-duration = 300
 
 # ── Focused Window Border ────────────────────────────────────────────────────
@@ -142,11 +142,16 @@ on-mode-changed = []
     # Each press advances to the next size in the list; wraps around at the end.
     alt-r = 'cycle-size 33% 50% 66% 80%'
 
+    # Center the focused niri column. By default, niri layout keeps columns
+    # left-aligned so multiple windows can stay visible side-by-side.
+    alt-c = 'niri-center'
+
     # Stack / unstack the focused window into the column on its left.
     alt-rightSquareBracket = 'window-stack'
     alt-shift-rightSquareBracket = 'window-unstack'
 
-    # Focus navigation (in niri layout, left/right scrolls through the column strip)
+    # Focus navigation. Niri layout stays left-aligned by default;
+    # use niri-center to center the focused column on demand.
     alt-h = 'focus left'
     alt-j = 'focus down'
     alt-k = 'focus up'
@@ -174,7 +179,6 @@ on-mode-changed = []
     alt-9 = 'workspace 9'
     alt-a = 'workspace A' # In your config, you can drop workspace bindings that you don't need
     alt-b = 'workspace B'
-    alt-c = 'workspace C'
     alt-d = 'workspace D'
     alt-e = 'workspace E'
     alt-f = 'workspace F'
