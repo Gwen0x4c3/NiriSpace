@@ -70,7 +70,7 @@ jobs:
       - name: cat ./.release/xcodebuild.log
         if: ${{ always() }}
         run: 'if test -f ./.release/xcodebuild.log; then cat ./.release/xcodebuild.log; fi'
-      - run: cd AeroSpace/.release && zip -r NiriSpace.zip NiriSpace.app
+      - run: cd .release && zip -r NiriSpace.zip NiriSpace.app
       - uses: actions/upload-artifact@v4
         with:
           name: NiriSpace-${{ matrix.os }}
