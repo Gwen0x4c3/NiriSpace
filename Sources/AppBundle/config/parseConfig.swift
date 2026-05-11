@@ -216,11 +216,11 @@ func tomlAnyToParsedConfigRecursive(any: Any, _ backtrace: ConfigBacktrace) -> P
         let dict: [String: Any] = try .init(try TOMLTable(source: rawToml))
         switch tomlAnyToParsedConfigRecursive(any: dict, .emptyRoot) {
             case .success(.dict(let dict)): rawTable = dict
-            case .success: return (defaultConfig, [.syntax("Config parsing error: the top level type must be a TOML Table")])
-            case .failure(let fail): return (defaultConfig, [fail])
+            case .success: return (Config(), [.syntax("Config parsing error: the top level type must be a TOML Table")])
+            case .failure(let fail): return (Config(), [fail])
         }
     } catch {
-        return (defaultConfig, [.syntax(error.description)])
+        return (Config(), [.syntax(error.description)])
     }
 
     var errors: [ConfigParseError] = []
