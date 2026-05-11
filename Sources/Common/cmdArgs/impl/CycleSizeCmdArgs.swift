@@ -6,7 +6,7 @@ public struct CycleSizeCmdArgs: CmdArgs {
         allowInConfig: true,
         help: cycle_size_help_generated,
         flags: [
-            "--window-id": optionalWindowIdFlag(),
+            "--window-id": windowIdSubArgParser(),
         ],
         posArgs: [newMandatoryPosArgParser(\.presets, parseCycleSizePresets, placeholder: "<width-percent>...")],
     )

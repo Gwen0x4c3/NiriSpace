@@ -8,7 +8,7 @@ func findCustomConfigUrl() -> ConfigFile {
     let xdgConfigHome = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"].map { URL(filePath: $0) }
         ?? home.appending(path: ".config/")
     let candidates: [URL] = switch serverArgs.configLocation {
-        case .some(let configLocation): [URL(filePath: configLocation)]
+        case let configLocation?: [URL(filePath: configLocation)]
         case nil:
             [
                 home.appending(path: niriSpaceConfigDotfileName),

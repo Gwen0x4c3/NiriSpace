@@ -6,7 +6,7 @@ public struct WindowUnstackCmdArgs: CmdArgs {
         allowInConfig: true,
         help: window_unstack_help_generated,
         flags: [
-            "--window-id": optionalWindowIdFlag(),
+            "--window-id": windowIdSubArgParser(),
         ],
         posArgs: [],
     )

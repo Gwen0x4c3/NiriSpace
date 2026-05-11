@@ -40,7 +40,7 @@ jobs:
           path: AeroSpace
       - run: ./.github/gh-actions-runner-xcode-select.sh
       - run: ./build-debug.sh
-      - run: ./run-tests.sh
+      - run: ./test.sh
 
   # We build release artifacts only on the latest macOS versions because:
   # 1. It cuts the build time twice on GH Actions

@@ -5,21 +5,21 @@ struct CycleSizeCommand: Command {
     let args: CycleSizeCmdArgs
     /*conforms*/ let shouldResetClosedWindowsCache = false
 
-    func run(_ env: CmdEnv, _ io: CmdIo) -> Bool {
-        guard let target = args.resolveTargetOrReportError(env, io) else { return false }
-        guard let window = target.windowOrNil else { return io.err(noWindowIsFocused) }
+    func run(_ env: CmdEnv, _ io: CmdIo) -> BinaryExitCode {
+        guard let target = args.resolveTargetOrReportError(env, io) else { return .fail }
+        guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
         guard let column = window.parentsWithSelf.first(where: { ($0.parent as? TilingContainer)?.layout == .niri }) else {
-            return io.err("cycle-size currently works only for windows inside niri layout")
+            return .fail(io.err("cycle-size currently works only for windows inside niri layout"))
         }
-        guard let workspace = column.nodeWorkspace else { return false }
+        guard let workspace = column.nodeWorkspace else { return .fail }
 
         let currentWidth = column.getWeight(.h)
         let orderedWidths = args.presets.val.map(workspace.niriColumnWidth(percent:))
         guard let nextWidth = nextCycleSize(currentWidth: currentWidth, orderedWidths: orderedWidths) else {
-            return false
+            return .fail
         }
         column.setWeight(.h, nextWidth)
-        return true
+        return .succ
     }
 }
 

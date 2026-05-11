@@ -6,7 +6,7 @@ public struct WindowStackCmdArgs: CmdArgs {
         allowInConfig: true,
         help: window_stack_help_generated,
         flags: [
-            "--window-id": optionalWindowIdFlag(),
+            "--window-id": windowIdSubArgParser(),
         ],
         posArgs: [],
     )

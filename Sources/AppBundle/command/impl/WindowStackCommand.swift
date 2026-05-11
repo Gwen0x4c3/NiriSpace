@@ -5,17 +5,17 @@ struct WindowStackCommand: Command {
     let args: WindowStackCmdArgs
     /*conforms*/ let shouldResetClosedWindowsCache = true
 
-    func run(_ env: CmdEnv, _ io: CmdIo) -> Bool {
-        guard let target = args.resolveTargetOrReportError(env, io) else { return false }
-        guard let window = target.windowOrNil else { return io.err(noWindowIsFocused) }
+    func run(_ env: CmdEnv, _ io: CmdIo) -> BinaryExitCode {
+        guard let target = args.resolveTargetOrReportError(env, io) else { return .fail }
+        guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
         guard let (root, column) = niriRootColumn(for: window) else {
-            return io.err("window-stack currently works only for windows inside niri layout")
+            return .fail(io.err("window-stack currently works only for windows inside niri layout"))
         }
         guard column == window else {
-            return io.err("window-stack currently works only when the focused window is already its own niri column")
+            return .fail(io.err("window-stack currently works only when the focused window is already its own niri column"))
         }
         guard let ownIndex = column.ownIndex, ownIndex > 0 else {
-            return io.err("No left neighbour column to stack into")
+            return .fail(io.err("No left neighbour column to stack into"))
         }
 
         let leftNeighbour = root.children[ownIndex - 1]
@@ -36,7 +36,7 @@ struct WindowStackCommand: Command {
 
         _ = window.unbindFromParent()
         window.bind(to: stackColumn, adaptiveWeight: WEIGHT_AUTO, index: INDEX_BIND_LAST)
-        return true
+        return .succ
     }
 }
 
