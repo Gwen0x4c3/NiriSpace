@@ -1,0 +1,40 @@
+= aerospace-niri-center(1)
+include::util/man-attributes.adoc[]
+:manname: aerospace-niri-center
+// tag::purpose[]
+:manpurpose: Center the focused niri column in the viewport
+// end::purpose[]
+
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace niri-center [-h|--help]
+
+// end::synopsis[]
+
+== Description
+
+// tag::body[]
+{manpurpose}
+
+By default, multi-column `niri` layouts stay left-aligned so multiple columns can remain visible side-by-side.
+This command explicitly stores the currently focused window as the viewport anchor and centers its column.
+
+If `niri-scroll-animation-duration` is greater than `0`, the viewport moves smoothly to the centered position.
+If the current workspace has only one `niri` column, that column is already centered automatically.
+
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+include::util/conditional-examples-header.adoc[]
+
+* Center the focused niri column: +
+`aerospace niri-center`
+
+* Bind a hotkey in config: +
+`alt-c = 'niri-center'`
+
+// end::body[]
+
+include::util/man-footer.adoc[]
