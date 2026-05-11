@@ -144,7 +144,7 @@ on-mode-changed = []
 
     # Reset all niri column widths in the current workspace back to the configured
     # default width above (50% by default).
-    alt-0 = 'balance-sizes'
+    alt-b = 'balance-sizes'
 
     # Center the focused niri column. By default, niri layout keeps columns
     # left-aligned so multiple windows can stay visible side-by-side.
@@ -182,7 +182,8 @@ on-mode-changed = []
     alt-8 = 'workspace 8'
     alt-9 = 'workspace 9'
     alt-a = 'workspace A' # In your config, you can drop workspace bindings that you don't need
-    alt-b = 'workspace B'
+    # alt-b is reserved for balance-sizes in the niri default config.
+    # alt-b = 'workspace B'
     alt-d = 'workspace D'
     alt-e = 'workspace E'
     alt-f = 'workspace F'
