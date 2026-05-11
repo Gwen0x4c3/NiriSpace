@@ -88,3 +88,74 @@ final class NiriAnimationDriver {
         }
     }
 }
+
+@MainActor
+final class NiriWindowAnimationDriver {
+    static let shared = NiriWindowAnimationDriver()
+
+    private var timer: DispatchSourceTimer?
+    private var startTime: DispatchTime = .now()
+    private var duration: TimeInterval = 0.3
+    private weak var targetContainer: TilingContainer?
+
+    var isAnimating: Bool { timer != nil }
+    func isAnimating(container: TilingContainer) -> Bool { isAnimating && targetContainer === container }
+
+    func startAnimation(container: TilingContainer) {
+        guard config.niriScrollAnimationDuration > 0,
+              let workspace = container.nodeWorkspace,
+              workspace.isVisible,
+              focus.workspace == workspace
+        else {
+            stopAnimation()
+            return
+        }
+
+        if isAnimating, targetContainer !== container {
+            stopAnimation()
+        }
+
+        targetContainer = container
+        duration = TimeInterval(config.niriScrollAnimationDuration) / 1000.0
+        startTime = .now()
+
+        guard timer == nil else { return }
+        let timerSource = DispatchSource.makeTimerSource(queue: .main)
+        timerSource.schedule(deadline: .now(), repeating: .milliseconds(8))
+        timerSource.setEventHandler { [weak self] in
+            Task { @MainActor in
+                await self?.tick()
+            }
+        }
+        timerSource.resume()
+        timer = timerSource
+    }
+
+    func stopAnimation() {
+        targetContainer?.cleanUserData(key: TilingContainer.niriWindowAnimationFromRectsKey)
+        targetContainer?.cleanUserData(key: TilingContainer.niriWindowAnimationProgressKey)
+        timer?.cancel()
+        timer = nil
+        targetContainer = nil
+    }
+
+    private func tick() async {
+        guard let container = targetContainer,
+              let workspace = container.nodeWorkspace,
+              workspace.isVisible,
+              focus.workspace == workspace
+        else {
+            stopAnimation()
+            return
+        }
+
+        let elapsed = Double(DispatchTime.now().uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000_000.0
+        let t = CGFloat(min(elapsed / duration, 1.0))
+        container.putUserData(key: TilingContainer.niriWindowAnimationProgressKey, data: easeOutCubic(t))
+        try? await workspace.layoutWorkspace()
+
+        if t >= 1.0 {
+            stopAnimation()
+        }
+    }
+}

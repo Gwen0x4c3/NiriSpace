@@ -15,6 +15,8 @@ let projectRoot: URL = {
 
 @MainActor
 func setUpWorkspacesForTests() {
+    NiriAnimationDriver.shared.stopAnimation()
+    NiriWindowAnimationDriver.shared.stopAnimation()
     config = defaultConfig
     configUrl = defaultConfigUrl
     config.enableNormalizationFlattenContainers = false // Make layout tests more predictable

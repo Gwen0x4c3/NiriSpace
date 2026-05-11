@@ -40,6 +40,35 @@ struct WindowStackCommand: Command {
     }
 }
 
+struct MoveColumnCommand: Command {
+    let args: MoveColumnCmdArgs
+    /*conforms*/ let shouldResetClosedWindowsCache = true
+
+    func run(_ env: CmdEnv, _ io: CmdIo) -> BinaryExitCode {
+        guard let target = args.resolveTargetOrReportError(env, io) else { return .fail }
+        guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
+        guard let (root, column) = niriRootColumn(for: window) else {
+            return .fail(io.err("move-column currently works only for windows inside niri layout"))
+        }
+        guard let ownIndex = column.ownIndex else { return .fail }
+
+        let targetIndex = switch args.direction.val {
+            case .left: ownIndex - 1
+            case .right: ownIndex + 1
+        }
+        guard root.children.indices.contains(targetIndex) else {
+            return .fail(io.err("No \(args.direction.val.rawValue) neighbour column to move across"))
+        }
+
+        let niriAnimation = NiriMutationAnimation(window: window)
+        let previousBinding = column.unbindFromParent()
+        column.bind(to: root, adaptiveWeight: previousBinding.adaptiveWeight, index: targetIndex)
+        window.markAsMostRecentChild()
+        niriAnimation.startIfNeeded(.succ)
+        return .succ
+    }
+}
+
 @MainActor
 func niriRootColumn(for window: Window) -> (root: TilingContainer, column: TreeNode)? {
     guard let column = window.parentsWithSelf.first(where: { ($0.parent as? TilingContainer)?.layout == .niri }) else {

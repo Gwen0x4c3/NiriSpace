@@ -15,7 +15,8 @@ extension Workspace {
 extension TreeNode {
     @MainActor
     fileprivate func layoutRecursive(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
-        let physicalRect = Rect(topLeftX: point.x, topLeftY: point.y, width: width, height: height)
+        let targetPhysicalRect = Rect(topLeftX: point.x, topLeftY: point.y, width: width, height: height)
+        let physicalRect = animatedNiriPhysicalRect(target: targetPhysicalRect)
         switch nodeCases {
             case .workspace(let workspace):
                 lastAppliedLayoutPhysicalRect = physicalRect
@@ -35,7 +36,7 @@ extension TreeNode {
                     } else {
                         lastAppliedLayoutPhysicalRect = physicalRect
                         window.isFullscreen = false
-                        window.setAxFrame(point, CGSize(width: width, height: height))
+                        window.setAxFrame(physicalRect.topLeftCorner, physicalRect.size)
                     }
                 }
             case .tilingContainer(let container):
@@ -55,6 +56,25 @@ extension TreeNode {
                  .macosPopupWindowsContainer, .macosHiddenAppsWindowsContainer:
                 return // Nothing to do for weirdos
         }
+    }
+
+    @MainActor
+    private func animatedNiriPhysicalRect(target: Rect) -> Rect {
+        guard let window = self as? Window else { return target }
+        guard let container = parents.compactMap({ $0 as? TilingContainer }).first(where: {
+            $0.layout == .niri && $0.getUserData(key: TilingContainer.niriWindowAnimationProgressKey) != nil
+        }) else { return target }
+        guard let fromRects = container.getUserData(key: TilingContainer.niriWindowAnimationFromRectsKey),
+              let from = fromRects[window.windowId],
+              let progress = container.getUserData(key: TilingContainer.niriWindowAnimationProgressKey)
+        else { return target }
+        func interpolate(_ from: CGFloat, _ to: CGFloat) -> CGFloat { from + (to - from) * progress }
+        return Rect(
+            topLeftX: interpolate(from.topLeftX, target.topLeftX),
+            topLeftY: interpolate(from.topLeftY, target.topLeftY),
+            width: interpolate(from.width, target.width),
+            height: interpolate(from.height, target.height),
+        )
     }
 }
 
@@ -110,6 +130,8 @@ extension TilingContainer {
     private static let niriViewportWidthKey = TreeNodeUserDataKey<CGFloat>(key: "niriViewportWidthKey")
     static let niriAnimatedOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriAnimatedOffsetKey")
     static let niriLastViewportOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriLastViewportOffsetKey")
+    static let niriWindowAnimationFromRectsKey = TreeNodeUserDataKey<[UInt32: Rect]>(key: "niriWindowAnimationFromRectsKey")
+    static let niriWindowAnimationProgressKey = TreeNodeUserDataKey<CGFloat>(key: "niriWindowAnimationProgressKey")
 
     @MainActor
     fileprivate func layoutNiri(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
@@ -297,6 +319,7 @@ extension TilingContainer {
         {
             let scale = viewportWidth / previousViewportWidth
             for child in children {
+                child.cleanUserData(key: Window.niriPreFullscreenWidthKey)
                 child.setWeight(.h, child.getWeight(.h) * scale)
             }
         }

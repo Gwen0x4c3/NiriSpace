@@ -9,6 +9,9 @@ final class WindowStackCommandTest: XCTestCase {
     func testParseWindowStackCommands() {
         XCTAssertTrue(parseCommand("window-stack").cmdOrNil is WindowStackCommand)
         XCTAssertTrue(parseCommand("window-unstack").cmdOrNil is WindowUnstackCommand)
+        XCTAssertTrue(parseCommand("move-column left").cmdOrNil is MoveColumnCommand)
+        XCTAssertTrue(parseCommand("move-column right").cmdOrNil is MoveColumnCommand)
+        XCTAssertNil(parseCommand("move-column up").cmdOrNil)
     }
 
     func testWindowStackInNiri() async throws {
@@ -81,5 +84,52 @@ final class WindowStackCommandTest: XCTestCase {
 
         assertEquals(result.exitCode, 1)
         assertEquals(root.layoutDescription, .niri([.window(1), .window(2)]))
+    }
+
+    func testMoveColumnMovesWholeStackedColumn() async throws {
+        config.defaultRootContainerLayout = .niri
+        let root = Workspace.get(byName: name).rootTilingContainer
+        TestWindow.new(id: 1, parent: root)
+        TilingContainer.newVTiles(parent: root, adaptiveWeight: 1).apply {
+            TestWindow.new(id: 2, parent: $0)
+            XCTAssertTrue(TestWindow.new(id: 3, parent: $0).focusWindow())
+        }
+        TestWindow.new(id: 4, parent: root)
+
+        let result = try await parseCommand("move-column right").cmdOrDie.run(.defaultEnv, .emptyStdin)
+
+        assertEquals(result.exitCode, 0)
+        assertEquals(root.layoutDescription, .niri([.window(1), .window(4), .v_tiles([.window(2), .window(3)])]))
+        assertEquals(focus.windowOrNil?.windowId, 3)
+    }
+
+    func testMoveColumnInsertsWindowColumnBesideStackedColumn() async throws {
+        config.defaultRootContainerLayout = .niri
+        let root = Workspace.get(byName: name).rootTilingContainer
+        TilingContainer.newVTiles(parent: root, adaptiveWeight: 1).apply {
+            TestWindow.new(id: 1, parent: $0)
+            TestWindow.new(id: 2, parent: $0)
+        }
+        XCTAssertTrue(TestWindow.new(id: 3, parent: root).focusWindow())
+        TestWindow.new(id: 4, parent: root)
+
+        let result = try await parseCommand("move-column left").cmdOrDie.run(.defaultEnv, .emptyStdin)
+
+        assertEquals(result.exitCode, 0)
+        assertEquals(root.layoutDescription, .niri([.window(3), .v_tiles([.window(1), .window(2)]), .window(4)]))
+        assertEquals(focus.windowOrNil?.windowId, 3)
+    }
+
+    func testMoveColumnRequiresNiriAndHorizontalNeighbour() async throws {
+        let workspace = Workspace.get(byName: name)
+        let root = workspace.rootTilingContainer
+        XCTAssertTrue(TestWindow.new(id: 1, parent: root).focusWindow())
+
+        let nonNiri = try await parseCommand("move-column left").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertEquals(nonNiri.exitCode, 1)
+
+        workspace.rootTilingContainer.layout = .niri
+        let noLeftNeighbour = try await parseCommand("move-column left").cmdOrDie.run(.defaultEnv, .emptyStdin)
+        assertEquals(noLeftNeighbour.exitCode, 1)
     }
 }

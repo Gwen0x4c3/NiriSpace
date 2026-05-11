@@ -126,6 +126,13 @@ include::aerospace-move.adoc[tags=synopsis]
 include::aerospace-move.adoc[tags=purpose]
 include::aerospace-move.adoc[tags=body]
 
+== move-column
+----
+include::aerospace-move-column.adoc[tags=synopsis]
+----
+include::aerospace-move-column.adoc[tags=purpose]
+include::aerospace-move-column.adoc[tags=body]
+
 == move-mouse
 ----
 include::./aerospace-move-mouse.adoc[tags=synopsis]

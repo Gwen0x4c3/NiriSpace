@@ -1,0 +1,45 @@
+= aerospace-move-column(1)
+include::util/man-attributes.adoc[]
+// tag::purpose[]
+:manpurpose: Move the focused niri column left or right
+// end::purpose[]
+:manname: aerospace-move-column
+
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace move-column [-h|--help] [--window-id <window-id>] (left|right)
+
+// end::synopsis[]
+
+== Description
+
+// tag::body[]
+{manpurpose}
+
+This command currently works only in `niri` layout. A niri column is the top-level child of the niri root container, so if the focused window is stacked with other windows in the same column, the whole stacked column moves together.
+
+Unlike `move left` and `move right`, `move-column` never moves the focused window into a neighbouring stack. It reorders whole columns horizontally.
+
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+include::util/conditional-examples-header.adoc[]
+
+* Move the focused niri column left: +
+`aerospace move-column left`
+
+* Move the focused niri column right: +
+`aerospace move-column right`
+
+* Bind hotkeys in config: +
+`cmd-shift-h = 'move-column left'` +
+`cmd-shift-l = 'move-column right'`
+
+// end::body[]
+
+include::util/man-footer.adoc[]

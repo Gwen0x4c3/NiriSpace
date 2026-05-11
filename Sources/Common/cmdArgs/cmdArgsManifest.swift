@@ -28,6 +28,7 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case macosNativeMinimize = "macos-native-minimize"
     case mode
     case move = "move"
+    case moveColumn = "move-column"
     case moveMouse = "move-mouse"
     case moveNodeToMonitor = "move-node-to-monitor"
     case moveNodeToWorkspace = "move-node-to-workspace"
@@ -108,6 +109,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(parseMoveCmdArgs)
                 // deprecated
                 result["move-through"] = SubCommandParser(parseMoveCmdArgs)
+            case .moveColumn:
+                result[kind.rawValue] = SubCommandParser(parseMoveColumnCmdArgs)
             case .moveMouse:
                 result[kind.rawValue] = SubCommandParser(parseMoveMouseCmdArgs)
             case .moveNodeToMonitor:

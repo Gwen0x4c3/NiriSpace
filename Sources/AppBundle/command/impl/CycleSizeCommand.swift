@@ -18,6 +18,7 @@ struct CycleSizeCommand: Command {
         guard let nextWidth = nextCycleSize(currentWidth: currentWidth, orderedWidths: orderedWidths) else {
             return .fail
         }
+        column.cleanUserData(key: Window.niriPreFullscreenWidthKey)
         column.setWeight(.h, nextWidth)
         return .succ
     }

@@ -22,6 +22,7 @@ private func balance(_ parent: TilingContainer) {
                 child.setWeight(parent.orientation, 1)
             case .niri:
                 if let niriDefaultWidth {
+                    child.cleanUserData(key: Window.niriPreFullscreenWidthKey)
                     child.setWeight(.h, niriDefaultWidth)
                 }
             case .accordion, .tabbed:

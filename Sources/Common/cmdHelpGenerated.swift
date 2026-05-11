@@ -102,6 +102,9 @@ let macos_native_minimize_help_generated = """
 let mode_help_generated = """
     USAGE: mode [-h|--help] <binding-mode>
     """
+let move_column_help_generated = """
+    USAGE: move-column [-h|--help] [--window-id <window-id>] (left|right)
+    """
 let move_mouse_help_generated = """
     USAGE: move-mouse [-h|--help] [--fail-if-noop] <mouse-position>
     """

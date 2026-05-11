@@ -58,6 +58,8 @@ extension CmdArgs {
                 command = ModeCommand(args: self as! ModeCmdArgs)
             case .move:
                 command = MoveCommand(args: self as! MoveCmdArgs)
+            case .moveColumn:
+                command = MoveColumnCommand(args: self as! MoveColumnCmdArgs)
             case .moveMouse:
                 command = MoveMouseCommand(args: self as! MoveMouseCmdArgs)
             case .moveNodeToMonitor:

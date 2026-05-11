@@ -108,6 +108,7 @@ extension TilingContainer {
     fileprivate func resetNiriColumnWidths(defaultWidth: CGFloat) {
         guard layout == .niri else { return }
         for child in children {
+            child.cleanUserData(key: Window.niriPreFullscreenWidthKey)
             child.setWeight(.h, defaultWidth)
         }
     }

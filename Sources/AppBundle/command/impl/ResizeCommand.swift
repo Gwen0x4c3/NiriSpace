@@ -60,6 +60,7 @@ struct ResizeCommand: Command { // todo cover with tests
                     .forEach { $0.setWeight(parent.orientation, $0.getWeight(parent.orientation) - childDiff) }
                 node.setWeight(orientation, node.getWeight(orientation) + diff)
             case .niri:
+                node.cleanUserData(key: Window.niriPreFullscreenWidthKey)
                 node.setWeight(orientation, node.getWeight(orientation) + diff)
             case .accordion, .tabbed:
                 return .fail

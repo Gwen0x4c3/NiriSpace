@@ -6,7 +6,6 @@ import XCTest
 @MainActor
 final class NiriModeTest: XCTestCase {
     override func setUp() async throws {
-        NiriAnimationDriver.shared.stopAnimation()
         setUpWorkspacesForTests()
     }
 
@@ -117,6 +116,29 @@ final class NiriModeTest: XCTestCase {
         assertEquals(root.layout, .niri)
         assertEquals(root.children[0].getWeight(.h), CGFloat(960))
         assertEquals(root.children[1].getWeight(.h), CGFloat(960))
+    }
+
+    func testFullscreenInNiriPersistsColumnWidthAndRestoresPreviousWidth() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 50
+        let workspace = Workspace.get(byName: name)
+        let viewportWidth = workspace.workspaceMonitor.visibleRectPaddedByOuterGaps.width
+
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+
+        XCTAssertTrue(window1.focusWindow())
+
+        _ = FullscreenCommand(args: FullscreenCmdArgs(rawArgs: [])).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), viewportWidth)
+        try await FocusCommand.new(direction: .right).run(.defaultEnv, .emptyStdin)
+        try await FocusCommand.new(direction: .left).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), viewportWidth)
+
+        _ = FullscreenCommand(args: FullscreenCmdArgs(rawArgs: [])).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), workspace.niriDefaultColumnWidth)
     }
 
     func testLayoutTabbedOnJoinedColumn() async throws {

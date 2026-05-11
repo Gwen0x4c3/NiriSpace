@@ -78,6 +78,10 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     alt-shift-k = 'move up'
     alt-shift-l = 'move right'
 
+    # ── Move columns ────────────────────────────────────────────────────────
+    cmd-shift-h = 'move-column left'
+    cmd-shift-l = 'move-column right'
+
     # ── Resize ──────────────────────────────────────────────────────────────
     alt-minus = 'resize smart -50'
     alt-equal = 'resize smart +50'
