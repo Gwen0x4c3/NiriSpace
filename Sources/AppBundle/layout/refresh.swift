@@ -47,6 +47,7 @@ func runHeavyCompleteRefreshSession(
                 SecureInputPanel.shared.refresh()
                 try await normalizeLayoutReason()
                 if shouldLayoutWorkspaces { try await layoutWorkspaces() }
+                NiriTagsPanel.shared.refresh()
                 try await FocusedWindowBorderPanel.shared.refresh()
             }
         }
@@ -87,6 +88,7 @@ func runLightSession<T>(
             if focusBefore != focusAfter {
                 focusAfter?.nativeFocus() // syncFocusToMacOs
             }
+            NiriTagsPanel.shared.refresh()
             try await FocusedWindowBorderPanel.shared.refresh()
             scheduleCancellableCompleteRefreshSession(event)
             return result

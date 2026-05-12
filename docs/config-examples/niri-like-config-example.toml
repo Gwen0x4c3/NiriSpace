@@ -66,6 +66,9 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     alt-rightSquareBracket = 'window-stack'
     alt-shift-rightSquareBracket = 'window-unstack'
 
+    # Show only the focused window in a stacked column, with tags on the left.
+    alt-t = 'niri-toggle-tags'
+
     # ── Focus (scrolls the strip in niri layout) ────────────────────────────
     alt-h = 'focus left'
     alt-j = 'focus down'
@@ -77,6 +80,10 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     alt-shift-j = 'move down'
     alt-shift-k = 'move up'
     alt-shift-l = 'move right'
+
+    # ── Move columns ────────────────────────────────────────────────────────
+    cmd-shift-h = 'move-column left'
+    cmd-shift-l = 'move-column right'
 
     # ── Resize ──────────────────────────────────────────────────────────────
     alt-minus = 'resize smart -50'

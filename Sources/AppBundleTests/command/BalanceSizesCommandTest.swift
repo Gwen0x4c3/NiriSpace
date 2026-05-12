@@ -22,4 +22,26 @@ final class BalanceSizesCommandTest: XCTestCase {
             assertEquals(window.getWeight(workspace.rootTilingContainer.orientation), 1)
         }
     }
+
+    func testBalanceSizesResetsNiriColumnsToConfiguredDefaultWidth() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 50
+
+        let workspace = Workspace.get(byName: name)
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+
+        let root = workspace.rootTilingContainer
+        root.children[0].setWeight(.h, 700)
+        root.children[1].setWeight(.h, 1200)
+
+        try await BalanceSizesCommand(args: BalanceSizesCmdArgs(rawArgs: []))
+            .run(.defaultEnv.copy(\.workspaceName, name), .emptyStdin)
+
+        let expectedWidth = workspace.niriDefaultColumnWidth
+        assertEquals(root.children[0].getWeight(.h), expectedWidth)
+        assertEquals(root.children[1].getWeight(.h), expectedWidth)
+    }
 }

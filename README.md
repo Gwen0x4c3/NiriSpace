@@ -42,9 +42,13 @@ default-root-container-layout = 'niri'
 # Default column width for new windows in niri layout (percent of monitor width)
 niri-default-column-width-percent = 80
 
-# Hovering another tiled niri window updates focus/app activation without recentering.
-# Clicking still recenters the clicked window.
+# Hovering another tiled niri window updates focus/app activation.
+# It does not recenter the strip; use niri-center for explicit centering.
 niri-mouse-follows-focus = false
+
+# Duration (in milliseconds) of explicit niri viewport scroll animations.
+# Set to 0 to disable animation.
+niri-scroll-animation-duration = 300
 
 # Draw a border around the focused window
 focused-window-border-enabled = true
@@ -58,11 +62,15 @@ focused-window-border-width = 4
     # Cycle focused window through predefined column widths
     alt-r = 'cycle-size 33% 50% 66% 80%'
 
+    # Center the focused niri column on demand
+    alt-c = 'niri-center'
+
     # Stack / unstack the focused window in niri layout
     alt-rightSquareBracket = 'window-stack'
     alt-shift-rightSquareBracket = 'window-unstack'
 
-    # Focus navigation (scrolls through the column strip in niri layout)
+    # Focus navigation. Niri layout stays left-aligned by default;
+    # use niri-center to center the focused column on demand.
     alt-h = 'focus left'
     alt-j = 'focus down'
     alt-k = 'focus up'
@@ -84,6 +92,7 @@ focused-window-border-width = 4
 | Command | Description |
 |---|---|
 | `cycle-size <sizes...>` | Cycle the focused column through a list of predefined widths. Sizes are specified as percentages (e.g. `33%`, `50%`, `66%`). |
+| `niri-center` | Center the focused niri column in the viewport. By default, niri keeps columns left-aligned so multiple windows can stay visible side-by-side. |
 | `window-stack` | Stack the focused niri window onto the column to its left. |
 | `window-unstack` | Unstack the focused niri window into its own column. |
 
@@ -93,7 +102,8 @@ focused-window-border-width = 4
 |---|---|---|
 | `default-root-container-layout` | `'tiles'` | Root container layout. Now accepts `'niri'` in addition to `'tiles'` and `'accordion'`. |
 | `niri-default-column-width-percent` | `80` | Default column width (as % of monitor width) for new windows in niri layout. |
-| `niri-mouse-follows-focus` | `false` | In niri layout only, hovering another tiled window updates focus/native app activation without recentering the strip. A click still recenters the clicked window. |
+| `niri-mouse-follows-focus` | `false` | In niri layout only, hovering another tiled window updates focus/native app activation without recentering the strip. |
+| `niri-scroll-animation-duration` | `300` | Duration (in ms) of explicit niri viewport scroll animations, such as `niri-center`. Set to `0` to disable animation. |
 | `focused-window-border-enabled` | `false` | Whether to draw a border around the focused window. |
 | `focused-window-border-width` | `4` | Width of the focused window border in pixels. |
 
@@ -136,7 +146,7 @@ In **niri layout**, windows are arranged as **columns in an infinite horizontal 
 ```
 
 - Each window gets a full-height column with a configurable width
-- The viewport scrolls to keep the focused window visible
+- The strip stays left-aligned by default so multiple columns can remain visible; use `niri-center` to center the focused column on demand
 - `cycle-size` lets you quickly toggle a window between different widths (e.g. narrow reference pane vs. wide editor)
 
 ## Acknowledgements

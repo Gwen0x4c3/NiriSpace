@@ -5,7 +5,9 @@ import XCTest
 
 @MainActor
 final class NiriModeTest: XCTestCase {
-    override func setUp() async throws { setUpWorkspacesForTests() }
+    override func setUp() async throws {
+        setUpWorkspacesForTests()
+    }
 
     func testParseNiriAndTabbedLayouts() {
         let command = parseCommand("layout niri tabbed h_tabbed v_tabbed scrolling-tiling tabs").cmdOrNil
@@ -36,6 +38,7 @@ final class NiriModeTest: XCTestCase {
 
     func testNiriLayoutScrollsViewportToFocusedColumn() async throws {
         config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 80
         let workspace = Workspace.get(byName: name)
 
         let window1 = TestWindow.new(id: 1, parent: workspace)
@@ -55,6 +58,51 @@ final class NiriModeTest: XCTestCase {
         assertEquals(window2.rectForTests?.height, CGFloat(1079))
     }
 
+    func testSingleWindowIsCenteredInNiriLayout() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 50
+        config.niriScrollAnimationDuration = 0
+        let workspace = Workspace.get(byName: name)
+        let viewport = workspace.workspaceMonitor.visibleRectPaddedByOuterGaps
+
+        let window = TestWindow.new(id: 1, parent: workspace)
+        try await window.relayoutWindow(on: workspace, forceTile: true)
+        try await workspace.layoutWorkspace()
+
+        let expectedWidth = workspace.niriDefaultColumnWidth
+        let expectedX = viewport.minX + (viewport.width - expectedWidth) / 2
+
+        assertEquals(window.rectForTests?.topLeftX, expectedX)
+        assertEquals(window.rectForTests?.width, expectedWidth)
+        assertEquals(window.rectForTests?.height, CGFloat(1079))
+    }
+
+    func testNiriCenterCentersFocusedColumnEvenWithoutScrollableSlack() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 50
+        config.niriScrollAnimationDuration = 0
+        let workspace = Workspace.get(byName: name)
+        let viewport = workspace.workspaceMonitor.visibleRectPaddedByOuterGaps
+
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+
+        XCTAssertTrue(window1.focusWindow())
+        try await workspace.layoutWorkspace()
+        assertEquals(window1.rectForTests?.topLeftX, viewport.minX)
+
+        _ = NiriCenterCommand(args: NiriCenterCmdArgs(rawArgs: [])).run(.defaultEnv, .emptyStdin)
+        try await workspace.layoutWorkspace()
+
+        let expectedWidth = workspace.niriDefaultColumnWidth
+        let centeredX = viewport.minX + (viewport.width - expectedWidth) / 2
+
+        assertEquals(window1.rectForTests?.topLeftX, centeredX)
+        assertEquals(window2.rectForTests?.topLeftX, centeredX + expectedWidth)
+    }
+
     func testSwitchingToNiriResetsExistingColumnWidthsToConfiguredDefault() async throws {
         config.niriDefaultColumnWidthPercent = 50
         let workspace = Workspace.get(byName: name)
@@ -68,6 +116,29 @@ final class NiriModeTest: XCTestCase {
         assertEquals(root.layout, .niri)
         assertEquals(root.children[0].getWeight(.h), CGFloat(960))
         assertEquals(root.children[1].getWeight(.h), CGFloat(960))
+    }
+
+    func testFullscreenInNiriPersistsColumnWidthAndRestoresPreviousWidth() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriDefaultColumnWidthPercent = 50
+        let workspace = Workspace.get(byName: name)
+        let viewportWidth = workspace.workspaceMonitor.visibleRectPaddedByOuterGaps.width
+
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+
+        XCTAssertTrue(window1.focusWindow())
+
+        _ = FullscreenCommand(args: FullscreenCmdArgs(rawArgs: [])).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), viewportWidth)
+        try await FocusCommand.new(direction: .right).run(.defaultEnv, .emptyStdin)
+        try await FocusCommand.new(direction: .left).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), viewportWidth)
+
+        _ = FullscreenCommand(args: FullscreenCmdArgs(rawArgs: [])).run(.defaultEnv, .emptyStdin)
+        assertEquals(window1.getWeight(.h), workspace.niriDefaultColumnWidth)
     }
 
     func testLayoutTabbedOnJoinedColumn() async throws {
@@ -124,6 +195,33 @@ final class NiriModeTest: XCTestCase {
         assertEquals(window1.rectForTests?.topLeftX, window1X)
         assertEquals(window2.rectForTests?.topLeftX, window2X)
         assertEquals(window3.rectForTests?.topLeftX, window3X)
+    }
+
+    func testInactiveWorkspaceDoesNotStartNiriAnimation() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriScrollAnimationDuration = 300
+
+        let workspace1 = Workspace.get(byName: name)
+        let root1 = workspace1.rootTilingContainer
+        let focusedWindow = TestWindow.new(id: 1, parent: workspace1)
+        try await focusedWindow.relayoutWindow(on: workspace1, forceTile: true)
+        XCTAssertTrue(focusedWindow.focusWindow())
+
+        let workspace2 = Workspace.get(byName: "other")
+        let root2 = workspace2.rootTilingContainer
+        let window2 = TestWindow.new(id: 2, parent: workspace2)
+        try await window2.relayoutWindow(on: workspace2, forceTile: true)
+        let window3 = TestWindow.new(id: 3, parent: workspace2)
+        try await window3.relayoutWindow(on: workspace2, forceTile: true)
+        let window4 = TestWindow.new(id: 4, parent: workspace2)
+        try await window4.relayoutWindow(on: workspace2, forceTile: true)
+
+        root1.putUserData(key: TilingContainer.niriLastViewportOffsetKey, data: 0)
+        root2.putUserData(key: TilingContainer.niriLastViewportOffsetKey, data: 0)
+        try await workspace2.layoutWorkspace()
+
+        XCTAssertNil(root2.getUserData(key: TilingContainer.niriAnimatedOffsetKey))
+        XCTAssertFalse(NiriAnimationDriver.shared.isAnimating(container: root2))
     }
 
     func testNormalFocusAfterHoverRecentersNiriViewport() async throws {

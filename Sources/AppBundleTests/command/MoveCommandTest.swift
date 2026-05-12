@@ -4,7 +4,9 @@ import XCTest
 
 @MainActor
 final class MoveCommandTest: XCTestCase {
-    override func setUp() async throws { setUpWorkspacesForTests() }
+    override func setUp() async throws {
+        setUpWorkspacesForTests()
+    }
 
     func testMove_swapWindows() async throws {
         let root = Workspace.get(byName: name).rootTilingContainer.apply {
@@ -83,6 +85,33 @@ final class MoveCommandTest: XCTestCase {
         try await MoveCommand(args: MoveCmdArgs(rawArgs: [], .left)).run(.defaultEnv, .emptyStdin)
         assertEquals(window2.hWeight, 2)
         assertEquals(window1.hWeight, 1)
+    }
+
+    func testMoveNiriStartsWindowAnimationFromPreviousRects() async throws {
+        config.defaultRootContainerLayout = .niri
+        config.niriScrollAnimationDuration = 300
+        let workspace = Workspace.get(byName: name)
+
+        let window1 = TestWindow.new(id: 1, parent: workspace)
+        try await window1.relayoutWindow(on: workspace, forceTile: true)
+        let window2 = TestWindow.new(id: 2, parent: workspace)
+        try await window2.relayoutWindow(on: workspace, forceTile: true)
+        _ = window1.focusWindow()
+        try await workspace.layoutWorkspace()
+
+        let window1X = window1.rectForTests?.topLeftX
+        let window2X = window2.rectForTests?.topLeftX
+
+        try await MoveCommand(args: MoveCmdArgs(rawArgs: [], .right)).run(.defaultEnv, .emptyStdin)
+
+        let root = workspace.rootTilingContainer
+        let fromRects = root.getUserData(key: TilingContainer.niriWindowAnimationFromRectsKey)
+        assertEquals(fromRects?[1]?.topLeftX, window1X)
+        assertEquals(fromRects?[2]?.topLeftX, window2X)
+        let progress = root.getUserData(key: TilingContainer.niriWindowAnimationProgressKey)
+        XCTAssertNotNil(progress)
+        XCTAssertGreaterThanOrEqual(progress ?? -1, 0)
+        XCTAssertLessThanOrEqual(progress ?? 2, 1)
     }
 
     func testMoveIn_newWeight() async throws {

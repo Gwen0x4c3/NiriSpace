@@ -58,6 +58,8 @@ extension CmdArgs {
                 command = ModeCommand(args: self as! ModeCmdArgs)
             case .move:
                 command = MoveCommand(args: self as! MoveCmdArgs)
+            case .moveColumn:
+                command = MoveColumnCommand(args: self as! MoveColumnCmdArgs)
             case .moveMouse:
                 command = MoveMouseCommand(args: self as! MoveMouseCmdArgs)
             case .moveNodeToMonitor:
@@ -66,6 +68,10 @@ extension CmdArgs {
                 command = MoveNodeToWorkspaceCommand(args: self as! MoveNodeToWorkspaceCmdArgs)
             case .moveWorkspaceToMonitor:
                 command = MoveWorkspaceToMonitorCommand(args: self as! MoveWorkspaceToMonitorCmdArgs)
+            case .niriCenter:
+                command = NiriCenterCommand(args: self as! NiriCenterCmdArgs)
+            case .niriToggleTags:
+                command = NiriToggleTagsCommand(args: self as! NiriToggleTagsCmdArgs)
             case .reloadConfig:
                 command = ReloadConfigCommand(args: self as! ReloadConfigCmdArgs)
             case .resize:

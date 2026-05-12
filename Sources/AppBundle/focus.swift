@@ -58,10 +58,7 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
     let monitor = mainMonitor
     return FrozenFocus(windowId: nil, workspaceName: monitor.activeWorkspace.name, monitorId_oneBased: monitor.monitorId_oneBased ?? 0)
 }()
-@MainActor private var _niriViewportAnchorByWorkspace: [String: FrozenFocus] = {
-    let initialFocus = _focus
-    return [initialFocus.workspaceName: initialFocus]
-}()
+@MainActor private var _niriViewportAnchorByWorkspace: [String: FrozenFocus] = [:]
 @MainActor private var _pendingNativeFocusTransition: (windowId: UInt32?, mode: FocusTransitionMode)? = nil
 
 /// Global focus.
@@ -78,6 +75,14 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
     _niriViewportAnchorByWorkspace[focus.workspace.name] = focus.frozen
 }
 
+@MainActor func rememberCurrentNiriViewportAnchor() {
+    rememberNiriViewportAnchor(focus)
+}
+
+@MainActor private func clearNiriViewportAnchor(_ workspace: Workspace) {
+    _niriViewportAnchorByWorkspace.removeValue(forKey: workspace.name)
+}
+
 @MainActor func expectNextNativeFocusTransition(windowId: UInt32?, mode: FocusTransitionMode) {
     _pendingNativeFocusTransition = (windowId, mode)
 }
@@ -91,10 +96,10 @@ private struct FrozenFocus: AeroAny, Equatable, Sendable {
 }
 
 @MainActor func setFocus(to newFocus: LiveFocus, mode: FocusTransitionMode = .normal) -> Bool {
-    if mode == .normal {
-        rememberNiriViewportAnchor(newFocus)
-    }
     if _focus == newFocus.frozen { return true }
+    if mode == .normal {
+        clearNiriViewportAnchor(newFocus.workspace)
+    }
     let oldFocus = focus
     // Normalize mruWindow when focus away from a workspace
     if oldFocus.workspace != newFocus.workspace {

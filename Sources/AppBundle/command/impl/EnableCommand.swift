@@ -33,6 +33,7 @@ struct EnableCommand: Command {
             try await activateMode(mainModeId)
         } else {
             FocusedWindowBorderPanel.shared.close()
+            NiriTagsPanel.shared.close()
             try await activateMode(nil)
         }
         return .succ

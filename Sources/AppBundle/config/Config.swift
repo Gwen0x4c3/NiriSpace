@@ -41,8 +41,9 @@ struct Config: ConvenienceCopyable {
     var _nonEmptyWorkspacesRootContainersLayoutOnStartup: Void = ()
     var defaultRootContainerLayout: Layout = .tiles
     var defaultRootContainerOrientation: DefaultContainerOrientation = .auto
-    var niriDefaultColumnWidthPercent: Int = 80
+    var niriDefaultColumnWidthPercent: Int = 50
     var niriMouseFollowsFocus: Bool = false
+    var niriScrollAnimationDuration: Int = 300
     var focusedWindowBorderEnabled: Bool = false
     var focusedWindowBorderWidth: Int = 4
     var startAtLogin: Bool = false

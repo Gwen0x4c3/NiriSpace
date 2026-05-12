@@ -15,7 +15,8 @@ extension Workspace {
 extension TreeNode {
     @MainActor
     fileprivate func layoutRecursive(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
-        let physicalRect = Rect(topLeftX: point.x, topLeftY: point.y, width: width, height: height)
+        let targetPhysicalRect = Rect(topLeftX: point.x, topLeftY: point.y, width: width, height: height)
+        let physicalRect = animatedNiriPhysicalRect(target: targetPhysicalRect)
         switch nodeCases {
             case .workspace(let workspace):
                 lastAppliedLayoutPhysicalRect = physicalRect
@@ -35,7 +36,7 @@ extension TreeNode {
                     } else {
                         lastAppliedLayoutPhysicalRect = physicalRect
                         window.isFullscreen = false
-                        window.setAxFrame(point, CGSize(width: width, height: height))
+                        window.setAxFrame(physicalRect.topLeftCorner, physicalRect.size)
                     }
                 }
             case .tilingContainer(let container):
@@ -55,6 +56,25 @@ extension TreeNode {
                  .macosPopupWindowsContainer, .macosHiddenAppsWindowsContainer:
                 return // Nothing to do for weirdos
         }
+    }
+
+    @MainActor
+    private func animatedNiriPhysicalRect(target: Rect) -> Rect {
+        guard let window = self as? Window else { return target }
+        guard let container = parents.compactMap({ $0 as? TilingContainer }).first(where: {
+            $0.layout == .niri && $0.getUserData(key: TilingContainer.niriWindowAnimationProgressKey) != nil
+        }) else { return target }
+        guard let fromRects = container.getUserData(key: TilingContainer.niriWindowAnimationFromRectsKey),
+              let from = fromRects[window.windowId],
+              let progress = container.getUserData(key: TilingContainer.niriWindowAnimationProgressKey)
+        else { return target }
+        func interpolate(_ from: CGFloat, _ to: CGFloat) -> CGFloat { from + (to - from) * progress }
+        return Rect(
+            topLeftX: interpolate(from.topLeftX, target.topLeftX),
+            topLeftY: interpolate(from.topLeftY, target.topLeftY),
+            width: interpolate(from.width, target.width),
+            height: interpolate(from.height, target.height),
+        )
     }
 }
 
@@ -108,18 +128,49 @@ extension Window {
 
 extension TilingContainer {
     private static let niriViewportWidthKey = TreeNodeUserDataKey<CGFloat>(key: "niriViewportWidthKey")
+    static let niriAnimatedOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriAnimatedOffsetKey")
+    static let niriLastViewportOffsetKey = TreeNodeUserDataKey<CGFloat>(key: "niriLastViewportOffsetKey")
+    static let niriWindowAnimationFromRectsKey = TreeNodeUserDataKey<[UInt32: Rect]>(key: "niriWindowAnimationFromRectsKey")
+    static let niriWindowAnimationProgressKey = TreeNodeUserDataKey<CGFloat>(key: "niriWindowAnimationProgressKey")
 
     @MainActor
     fileprivate func layoutNiri(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
         normalizeNiriColumnWidthsForViewport(width)
         var virtualPoint = virtual.topLeftCorner
-        let viewportOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
+        let targetOffset = niriViewportOffset(in: context.workspace, viewportWidth: width)
 
-        for child in children {
+        let lastOffset = getUserData(key: Self.niriLastViewportOffsetKey) ?? targetOffset
+        // Use animated offset if available, otherwise animate from the last rendered offset.
+        let animatedOffset = getUserData(key: Self.niriAnimatedOffsetKey) ?? lastOffset
+        let viewportOffset: CGFloat
+        let shouldAnimateViewport =
+            config.niriScrollAnimationDuration > 0 &&
+            context.workspace.isVisible &&
+            focus.workspace == context.workspace
+
+        if !shouldAnimateViewport, NiriAnimationDriver.shared.isAnimating(container: self) {
+            NiriAnimationDriver.shared.stopAnimation()
+        }
+
+        if shouldAnimateViewport && abs(animatedOffset - targetOffset) > 0.5 {
+            NiriAnimationDriver.shared.startAnimation(container: self, from: animatedOffset, to: targetOffset)
+            viewportOffset = animatedOffset
+        } else {
+            viewportOffset = targetOffset
+            cleanUserData(key: Self.niriAnimatedOffsetKey)
+        }
+        putUserData(key: Self.niriLastViewportOffsetKey, data: viewportOffset)
+
+        let rawGap = context.resolvedGaps.inner.horizontal.toDouble()
+        let lastIndex = children.indices.last
+
+        for (i, child) in children.enumerated() {
             let childWidth = child.getWeight(.h)
+            let gap = rawGap - (i == 0 ? rawGap / 2 : 0) - (i == lastIndex ? rawGap / 2 : 0)
+            let gapOffset = i == 0 ? 0 : rawGap / 2
             try await child.layoutRecursive(
-                CGPoint(x: point.x + virtualPoint.x - virtual.minX - viewportOffset, y: point.y),
-                width: childWidth,
+                CGPoint(x: point.x + virtualPoint.x - virtual.minX - viewportOffset + gapOffset, y: point.y),
+                width: childWidth - gap,
                 height: height,
                 virtual: Rect(
                     topLeftX: virtualPoint.x,
@@ -205,24 +256,76 @@ extension TilingContainer {
     @MainActor
     fileprivate func layoutTabbed(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
         guard let mruChild = mostRecentChild else { return }
+        if isNiriTagsColumn {
+            let hiddenPoint = niriTagsHiddenPoint()
+            for child in children where child != mruChild {
+                try await child.layoutRecursive(hiddenPoint, width: width, height: height, virtual: virtual, context)
+            }
+            try await mruChild.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
+            return
+        }
         for child in children where child != mruChild {
             try await child.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
         }
         try await mruChild.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
     }
 
+    private var isNiriTagsColumn: Bool {
+        orientation == .v && layout == .tabbed && (parent as? TilingContainer)?.layout == .niri
+    }
+
+    private func niriTagsHiddenPoint() -> CGPoint {
+        let maxX = monitors.map { $0.rect.maxX }.max() ?? mainMonitor.rect.maxX
+        let maxY = monitors.map { $0.rect.maxY }.max() ?? mainMonitor.rect.maxY
+        return CGPoint(x: maxX + 10_000, y: maxY + 10_000)
+    }
+
     @MainActor
     private func niriViewportOffset(in workspace: Workspace, viewportWidth: CGFloat) -> CGFloat {
         guard layout == .niri else { return 0 }
-        let anchorLeaf = (
-            niriViewportAnchor(in: workspace)?.windowOrNil
-                ?? (focus.workspace == workspace ? focus.windowOrNil : nil)
-                ?? workspace.mostRecentWindowRecursive
-                ?? workspace.anyLeafWindowRecursive
-        )
-        guard let activeChild = anchorLeaf?.directChild(of: self) ?? mostRecentChild ?? children.first else { return 0 }
+        let totalWidth = children.sumOfDouble { $0.getWeight(.h) }
+
+        if let anchorLeaf = niriViewportAnchor(in: workspace)?.windowOrNil,
+           let activeChild = anchorLeaf.directChild(of: self)
+        {
+            let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
+            return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
+        }
+
+        guard let activeChild = (
+            (focus.workspace == workspace ? focus.windowOrNil : nil)?.directChild(of: self)
+                ?? workspace.mostRecentWindowRecursive?.directChild(of: self)
+                ?? workspace.anyLeafWindowRecursive?.directChild(of: self)
+                ?? (children.count == 1 ? children.first : nil)
+        ) else { return 0 }
+
         let leadingWidth = children.prefix(while: { $0 != activeChild }).sumOfDouble { $0.getWeight(.h) }
-        return leadingWidth + activeChild.getWeight(.h) / 2 - viewportWidth / 2
+        let childWidth = activeChild.getWeight(.h)
+
+        if children.count == 1 {
+            return leadingWidth + childWidth / 2 - viewportWidth / 2
+        }
+
+        // Default multi-column behavior: keep the strip left-aligned as much as possible,
+        // but minimally scroll so the focused column stays fully visible.
+        let maxOffset = max(0, totalWidth - viewportWidth)
+        let previousOffset = (getUserData(key: Self.niriLastViewportOffsetKey) ?? 0)
+            .coerce(in: 0 ... maxOffset)
+        let childMinX = leadingWidth
+        let childMaxX = leadingWidth + childWidth
+
+        let targetOffset: CGFloat
+        if childWidth >= viewportWidth {
+            targetOffset = childMinX
+        } else if childMinX < previousOffset {
+            targetOffset = childMinX
+        } else if childMaxX > previousOffset + viewportWidth {
+            targetOffset = childMaxX - viewportWidth
+        } else {
+            targetOffset = previousOffset
+        }
+
+        return targetOffset.coerce(in: 0 ... maxOffset)
     }
 
     @MainActor
@@ -234,6 +337,7 @@ extension TilingContainer {
         {
             let scale = viewportWidth / previousViewportWidth
             for child in children {
+                child.cleanUserData(key: Window.niriPreFullscreenWidthKey)
                 child.setWeight(.h, child.getWeight(.h) * scale)
             }
         }

@@ -102,6 +102,9 @@ let macos_native_minimize_help_generated = """
 let mode_help_generated = """
     USAGE: mode [-h|--help] <binding-mode>
     """
+let move_column_help_generated = """
+    USAGE: move-column [-h|--help] [--window-id <window-id>] (left|right)
+    """
 let move_mouse_help_generated = """
     USAGE: move-mouse [-h|--help] [--fail-if-noop] <mouse-position>
     """
@@ -125,6 +128,12 @@ let move_workspace_to_monitor_help_generated = """
     """
 let move_help_generated = """
     USAGE: move [-h|--help] [--window-id <window-id>] [--boundaries <boundary>] [--boundaries-action <boundary-action>] (left|down|up|right)
+    """
+let niri_center_help_generated = """
+    USAGE: niri-center [-h|--help]
+    """
+let niri_toggle_tags_help_generated = """
+    USAGE: niri-toggle-tags [-h|--help] [--window-id <window-id>]
     """
 let reload_config_help_generated = """
     USAGE: reload-config [-h|--help] [--no-gui] [--dry-run]

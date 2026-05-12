@@ -28,10 +28,13 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case macosNativeMinimize = "macos-native-minimize"
     case mode
     case move = "move"
+    case moveColumn = "move-column"
     case moveMouse = "move-mouse"
     case moveNodeToMonitor = "move-node-to-monitor"
     case moveNodeToWorkspace = "move-node-to-workspace"
     case moveWorkspaceToMonitor = "move-workspace-to-monitor"
+    case niriCenter = "niri-center"
+    case niriToggleTags = "niri-toggle-tags"
     case reloadConfig = "reload-config"
     case resize
     case split
@@ -107,6 +110,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(parseMoveCmdArgs)
                 // deprecated
                 result["move-through"] = SubCommandParser(parseMoveCmdArgs)
+            case .moveColumn:
+                result[kind.rawValue] = SubCommandParser(parseMoveColumnCmdArgs)
             case .moveMouse:
                 result[kind.rawValue] = SubCommandParser(parseMoveMouseCmdArgs)
             case .moveNodeToMonitor:
@@ -117,6 +122,10 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result[kind.rawValue] = SubCommandParser(parseWorkspaceToMonitorCmdArgs)
                 // deprecated
                 result["move-workspace-to-display"] = SubCommandParser(MoveWorkspaceToMonitorCmdArgs.init)
+            case .niriCenter:
+                result[kind.rawValue] = SubCommandParser(NiriCenterCmdArgs.init)
+            case .niriToggleTags:
+                result[kind.rawValue] = SubCommandParser(NiriToggleTagsCmdArgs.init)
             case .reloadConfig:
                 result[kind.rawValue] = SubCommandParser(ReloadConfigCmdArgs.init)
             case .resize:

@@ -111,6 +111,7 @@ private let configParser: [String: any ParserProtocol<Config>] = [
     "default-root-container-orientation": Parser(\.defaultRootContainerOrientation, parseDefaultContainerOrientation),
     "niri-default-column-width-percent": Parser(\.niriDefaultColumnWidthPercent, parseNiriDefaultColumnWidthPercent),
     "niri-mouse-follows-focus": Parser(\.niriMouseFollowsFocus, parseBool),
+    "niri-scroll-animation-duration": Parser(\.niriScrollAnimationDuration, parseNiriScrollAnimationDuration),
     "focused-window-border-enabled": Parser(\.focusedWindowBorderEnabled, parseBool),
     "focused-window-border-width": Parser(\.focusedWindowBorderWidth, parseFocusedWindowBorderWidth),
 
@@ -215,11 +216,11 @@ func tomlAnyToParsedConfigRecursive(any: Any, _ backtrace: ConfigBacktrace) -> P
         let dict: [String: Any] = try .init(try TOMLTable(source: rawToml))
         switch tomlAnyToParsedConfigRecursive(any: dict, .emptyRoot) {
             case .success(.dict(let dict)): rawTable = dict
-            case .success: return (defaultConfig, [.syntax("Config parsing error: the top level type must be a TOML Table")])
-            case .failure(let fail): return (defaultConfig, [fail])
+            case .success: return (Config(), [.syntax("Config parsing error: the top level type must be a TOML Table")])
+            case .failure(let fail): return (Config(), [fail])
         }
     } catch {
-        return (defaultConfig, [.syntax(error.description)])
+        return (Config(), [.syntax(error.description)])
     }
 
     var errors: [ConfigParseError] = []
@@ -376,6 +377,11 @@ private func parseDefaultContainerOrientation(_ raw: Json, _ backtrace: ConfigBa
 private func parseNiriDefaultColumnWidthPercent(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
     parseInt(raw, backtrace)
         .filter(.semantic(backtrace, "Must be in [1, 100] range")) { (1 ... 100).contains($0) }
+}
+
+private func parseNiriScrollAnimationDuration(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {
+    parseInt(raw, backtrace)
+        .filter(.semantic(backtrace, "Must be >= 0")) { $0 >= 0 }
 }
 
 private func parseFocusedWindowBorderWidth(_ raw: Json, _ backtrace: ConfigBacktrace) -> ParsedConfig<Int> {

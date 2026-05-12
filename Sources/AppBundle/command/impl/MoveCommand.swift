@@ -11,7 +11,9 @@ struct MoveCommand: Command {
         guard let currentWindow = target.windowOrNil else {
             return .fail(io.err(noWindowIsFocused))
         }
+        let niriAnimation = NiriMutationAnimation(window: currentWindow)
         guard let parent = currentWindow.parent else { return .fail }
+        let result: BinaryExitCode
         switch parent.cases {
             case .tilingContainer(let parent):
                 let indexOfCurrent = currentWindow.ownIndex.orDie()
@@ -19,22 +21,52 @@ struct MoveCommand: Command {
                 if parent.orientation == direction.orientation && parent.children.indices.contains(indexOfSiblingTarget) {
                     switch parent.children[indexOfSiblingTarget].tilingTreeNodeCasesOrDie() {
                         case .tilingContainer(let topLevelSiblingTargetContainer):
-                            return deepMoveIn(window: currentWindow, into: topLevelSiblingTargetContainer, moveDirection: direction)
+                            result = deepMoveIn(window: currentWindow, into: topLevelSiblingTargetContainer, moveDirection: direction)
                         case .window: // "swap windows"
                             let prevBinding = currentWindow.unbindFromParent()
                             currentWindow.bind(to: parent, adaptiveWeight: prevBinding.adaptiveWeight, index: indexOfSiblingTarget)
-                            return .succ
+                            result = .succ
                     }
                 } else {
-                    return moveOut(window: currentWindow, direction: direction, io, args, env)
+                    result = moveOut(window: currentWindow, direction: direction, io, args, env)
                 }
             case .workspace: // floating window
-                return .fail(io.err("moving floating windows isn't yet supported")) // todo
+                result = .fail(io.err("moving floating windows isn't yet supported")) // todo
             case .macosMinimizedWindowsContainer, .macosFullscreenWindowsContainer, .macosHiddenAppsWindowsContainer:
-                return .fail(io.err(moveOutMacosUnconventionalWindow))
+                result = .fail(io.err(moveOutMacosUnconventionalWindow))
             case .macosPopupWindowsContainer:
-                return .fail // Impossible
+                result = .fail // Impossible
         }
+        niriAnimation.startIfNeeded(result)
+        return result
+    }
+}
+
+@MainActor struct NiriMutationAnimation {
+    private let container: TilingContainer?
+    private let fromRects: [UInt32: Rect]
+
+    init(window: Window) {
+        container = window.parents.compactMap { $0 as? TilingContainer }.first { $0.layout == .niri }
+        fromRects = container?.allLeafWindowsRecursive.reduce(into: [:]) { result, window in
+            if let rect = window.lastAppliedLayoutPhysicalRect {
+                result[window.windowId] = rect
+            }
+        } ?? [:]
+    }
+
+    func startIfNeeded(_ result: BinaryExitCode) {
+        guard result == .succ,
+              !fromRects.isEmpty,
+              let container,
+              config.niriScrollAnimationDuration > 0,
+              let workspace = container.nodeWorkspace,
+              workspace.isVisible,
+              focus.workspace == workspace
+        else { return }
+        container.putUserData(key: TilingContainer.niriWindowAnimationFromRectsKey, data: fromRects)
+        container.putUserData(key: TilingContainer.niriWindowAnimationProgressKey, data: CGFloat(0))
+        NiriWindowAnimationDriver.shared.startAnimation(container: container)
     }
 }
 

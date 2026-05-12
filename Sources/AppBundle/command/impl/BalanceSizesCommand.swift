@@ -15,10 +15,18 @@ struct BalanceSizesCommand: Command {
 
 @MainActor
 private func balance(_ parent: TilingContainer) {
+    let niriDefaultWidth = parent.nodeWorkspace?.niriDefaultColumnWidth
     for child in parent.children {
         switch parent.layout {
-            case .tiles: child.setWeight(parent.orientation, 1)
-            case .accordion, .tabbed, .niri: break // Do nothing
+            case .tiles:
+                child.setWeight(parent.orientation, 1)
+            case .niri:
+                if let niriDefaultWidth {
+                    child.cleanUserData(key: Window.niriPreFullscreenWidthKey)
+                    child.setWeight(.h, niriDefaultWidth)
+                }
+            case .accordion, .tabbed:
+                break // Do nothing
         }
         if let child = child as? TilingContainer {
             balance(child)
