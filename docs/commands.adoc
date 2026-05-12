@@ -161,6 +161,20 @@ include::aerospace-move-workspace-to-monitor.adoc[tags=synopsis]
 include::aerospace-move-workspace-to-monitor.adoc[tags=purpose]
 include::aerospace-move-workspace-to-monitor.adoc[tags=body]
 
+== niri-center
+----
+include::aerospace-niri-center.adoc[tags=synopsis]
+----
+include::aerospace-niri-center.adoc[tags=purpose]
+include::aerospace-niri-center.adoc[tags=body]
+
+== niri-toggle-tags
+----
+include::aerospace-niri-toggle-tags.adoc[tags=synopsis]
+----
+include::aerospace-niri-toggle-tags.adoc[tags=purpose]
+include::aerospace-niri-toggle-tags.adoc[tags=body]
+
 == reload-config
 ----
 include::aerospace-reload-config.adoc[tags=synopsis]

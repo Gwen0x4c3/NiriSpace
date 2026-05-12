@@ -10,7 +10,7 @@ struct WindowUnstackCommand: Command {
         guard let window = target.windowOrNil else { return .fail(io.err(noWindowIsFocused)) }
         guard let stack = window.parent as? TilingContainer,
               stack.orientation == .v,
-              stack.layout == .tiles,
+              (stack.layout == .tiles || stack.layout == .tabbed),
               let root = stack.parent as? TilingContainer,
               root.layout == .niri,
               let stackIndex = stack.ownIndex

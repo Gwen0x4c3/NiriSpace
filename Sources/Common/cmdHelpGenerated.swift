@@ -132,6 +132,9 @@ let move_help_generated = """
 let niri_center_help_generated = """
     USAGE: niri-center [-h|--help]
     """
+let niri_toggle_tags_help_generated = """
+    USAGE: niri-toggle-tags [-h|--help] [--window-id <window-id>]
+    """
 let reload_config_help_generated = """
     USAGE: reload-config [-h|--help] [--no-gui] [--dry-run]
     """

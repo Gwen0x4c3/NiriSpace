@@ -70,6 +70,8 @@ extension CmdArgs {
                 command = MoveWorkspaceToMonitorCommand(args: self as! MoveWorkspaceToMonitorCmdArgs)
             case .niriCenter:
                 command = NiriCenterCommand(args: self as! NiriCenterCmdArgs)
+            case .niriToggleTags:
+                command = NiriToggleTagsCommand(args: self as! NiriToggleTagsCmdArgs)
             case .reloadConfig:
                 command = ReloadConfigCommand(args: self as! ReloadConfigCmdArgs)
             case .resize:

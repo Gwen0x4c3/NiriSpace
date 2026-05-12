@@ -154,6 +154,10 @@ on-mode-changed = []
     alt-rightSquareBracket = 'window-stack'
     alt-shift-rightSquareBracket = 'window-unstack'
 
+    # Toggle niri tag mode for a stacked column: only the focused window is shown,
+    # with a small left-side tag strip for the other stacked windows.
+    alt-t = 'niri-toggle-tags'
+
     # Focus navigation. Niri layout stays left-aligned by default;
     # use niri-center to center the focused column on demand.
     alt-h = 'focus left'
@@ -200,7 +204,8 @@ on-mode-changed = []
     alt-p = 'workspace P'
     alt-q = 'workspace Q'
     alt-s = 'workspace S'
-    alt-t = 'workspace T'
+    # alt-t is reserved for niri-toggle-tags in the niri default config.
+    # alt-t = 'workspace T'
     alt-u = 'workspace U'
     alt-v = 'workspace V'
     alt-w = 'workspace W'

@@ -34,6 +34,7 @@ public enum CmdKind: String, CaseIterable, Equatable, Sendable {
     case moveNodeToWorkspace = "move-node-to-workspace"
     case moveWorkspaceToMonitor = "move-workspace-to-monitor"
     case niriCenter = "niri-center"
+    case niriToggleTags = "niri-toggle-tags"
     case reloadConfig = "reload-config"
     case resize
     case split
@@ -123,6 +124,8 @@ func initSubcommands() -> [String: any SubCommandParserProtocol] {
                 result["move-workspace-to-display"] = SubCommandParser(MoveWorkspaceToMonitorCmdArgs.init)
             case .niriCenter:
                 result[kind.rawValue] = SubCommandParser(NiriCenterCmdArgs.init)
+            case .niriToggleTags:
+                result[kind.rawValue] = SubCommandParser(NiriToggleTagsCmdArgs.init)
             case .reloadConfig:
                 result[kind.rawValue] = SubCommandParser(ReloadConfigCmdArgs.init)
             case .resize:

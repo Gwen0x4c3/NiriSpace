@@ -20,7 +20,10 @@ struct WindowStackCommand: Command {
 
         let leftNeighbour = root.children[ownIndex - 1]
         let stackColumn: TilingContainer
-        if let existing = leftNeighbour as? TilingContainer, existing.orientation == .v, existing.layout == .tiles {
+        if let existing = leftNeighbour as? TilingContainer,
+           existing.orientation == .v,
+           existing.layout == .tiles || existing.layout == .tabbed
+        {
             stackColumn = existing
         } else {
             let leftBinding = leftNeighbour.unbindFromParent()

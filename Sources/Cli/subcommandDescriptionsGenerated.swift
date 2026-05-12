@@ -33,6 +33,7 @@ let subcommandDescriptions = [
     ["  move-workspace-to-monitor", "Move workspace to monitor targeted by relative direction, by order, or by pattern."],
     ["  move", "Move the focused window in the given direction"],
     ["  niri-center", "Center the focused niri column in the viewport"],
+    ["  niri-toggle-tags", "Toggle tag mode for the focused niri stacked column"],
     ["  reload-config", "Reload currently active config"],
     ["  resize", "Resize the focused window"],
     ["  split", "Split focused window"],

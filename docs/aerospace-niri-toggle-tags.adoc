@@ -1,0 +1,43 @@
+= aerospace-niri-toggle-tags(1)
+include::util/man-attributes.adoc[]
+:manname: aerospace-niri-toggle-tags
+// tag::purpose[]
+:manpurpose: Toggle tag mode for the focused niri stacked column
+// end::purpose[]
+
+== Synopsis
+[verse]
+// tag::synopsis[]
+aerospace niri-toggle-tags [-h|--help] [--window-id <window-id>]
+
+// end::synopsis[]
+
+== Description
+
+// tag::body[]
+{manpurpose}
+
+Tag mode works only for stacked columns in `niri` layout. When enabled, only the focused window in that column is shown at full column size; the other stacked windows are moved out of view. A small tag strip is drawn to the left of the column, with the focused window highlighted.
+
+Use `focus up` and `focus down` to switch the visible window inside the tagged column.
+
+Running the command again disables tag mode and restores the stacked column to vertical tiling.
+
+include::./util/conditional-options-header.adoc[]
+
+-h, --help:: Print help
+
+--window-id <window-id>::
+include::./util/window-id-flag-desc.adoc[]
+
+include::util/conditional-examples-header.adoc[]
+
+* Toggle tag mode for the focused stacked niri column: +
+`aerospace niri-toggle-tags`
+
+* Bind a hotkey in config: +
+`alt-t = 'niri-toggle-tags'`
+
+// end::body[]
+
+include::util/man-footer.adoc[]

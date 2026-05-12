@@ -256,10 +256,28 @@ extension TilingContainer {
     @MainActor
     fileprivate func layoutTabbed(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) async throws {
         guard let mruChild = mostRecentChild else { return }
+        if isNiriTagsColumn {
+            let hiddenPoint = niriTagsHiddenPoint()
+            for child in children where child != mruChild {
+                try await child.layoutRecursive(hiddenPoint, width: width, height: height, virtual: virtual, context)
+            }
+            try await mruChild.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
+            return
+        }
         for child in children where child != mruChild {
             try await child.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
         }
         try await mruChild.layoutRecursive(point, width: width, height: height, virtual: virtual, context)
+    }
+
+    private var isNiriTagsColumn: Bool {
+        orientation == .v && layout == .tabbed && (parent as? TilingContainer)?.layout == .niri
+    }
+
+    private func niriTagsHiddenPoint() -> CGPoint {
+        let maxX = monitors.map { $0.rect.maxX }.max() ?? mainMonitor.rect.maxX
+        let maxY = monitors.map { $0.rect.maxY }.max() ?? mainMonitor.rect.maxY
+        return CGPoint(x: maxX + 10_000, y: maxY + 10_000)
     }
 
     @MainActor
